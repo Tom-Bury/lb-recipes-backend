@@ -1,0 +1,31 @@
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as admin from 'firebase-admin';
+import { Firestore, getFirestore } from 'firebase-admin/firestore';
+import { Configs } from 'src/config/interfaces/config.interface';
+
+@Injectable()
+export class FirebaseService {
+  private db: Firestore;
+  private initialized = false;
+
+  constructor(private configService: ConfigService<Configs, true>) {
+    if (!this.initialized) {
+      admin.initializeApp({
+        projectId: this.configService.get('googleCloudProjectId'),
+        credential: admin.credential.cert({
+          projectId: this.configService.get('googleCloudProjectId'),
+          clientEmail: this.configService.get('firebaseSAEmail'),
+          privateKey: this.configService.get('firebaseSAPrivateKey'),
+        }),
+      });
+      this.initialized = true;
+    }
+    this.db = getFirestore();
+    this.db.settings({ ignoreUndefinedProperties: true });
+  }
+
+  collection(collectionId: string) {
+    return this.db.collection(collectionId);
+  }
+}
