@@ -4,4 +4,6 @@ export interface Configs {
   firebaseSAEmail: string;
   firebaseSAPrivateKey: string;
   version: string;
+  adminPassword: string;
+  authJwtSecret: string;
 }
