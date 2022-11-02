@@ -4,6 +4,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { config } from './config/configuration';
 import { RecipesModule } from './recipes/recipes.module';
+import { PreviewImageService } from './preview-image/preview-image.service';
+import { PreviewImageModule } from './preview-image/preview-image.module';
 
 @Module({
   imports: [
@@ -13,8 +15,9 @@ import { RecipesModule } from './recipes/recipes.module';
       isGlobal: true,
     }),
     RecipesModule,
+    PreviewImageModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PreviewImageService],
 })
 export class AppModule {}

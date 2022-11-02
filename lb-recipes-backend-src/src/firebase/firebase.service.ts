@@ -7,10 +7,9 @@ import { Configs } from 'src/config/interfaces/config.interface';
 @Injectable()
 export class FirebaseService {
   private db: Firestore;
-  private initialized = false;
 
   constructor(private configService: ConfigService<Configs, true>) {
-    if (!this.initialized) {
+    try {
       admin.initializeApp({
         projectId: this.configService.get('googleCloudProjectId'),
         credential: admin.credential.cert({
@@ -19,10 +18,12 @@ export class FirebaseService {
           privateKey: this.configService.get('firebaseSAPrivateKey'),
         }),
       });
-      this.initialized = true;
+      this.db = getFirestore();
+      this.db.settings({ ignoreUndefinedProperties: true });
+    } catch (error) {
+      console.error(error);
+      this.db = getFirestore();
     }
-    this.db = getFirestore();
-    this.db.settings({ ignoreUndefinedProperties: true });
   }
 
   collection(collectionId: string) {
