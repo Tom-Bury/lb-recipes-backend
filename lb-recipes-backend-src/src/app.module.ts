@@ -6,6 +6,7 @@ import { config } from './config/configuration';
 import { RecipesModule } from './recipes/recipes.module';
 import { PreviewImageService } from './preview-image/preview-image.service';
 import { PreviewImageModule } from './preview-image/preview-image.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PreviewImageModule } from './preview-image/preview-image.module';
     }),
     RecipesModule,
     PreviewImageModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService, PreviewImageService],
