@@ -2,8 +2,6 @@ import {
   BadRequestException,
   Controller,
   Get,
-  HttpException,
-  HttpStatus,
   NotFoundException,
   Query,
 } from '@nestjs/common';

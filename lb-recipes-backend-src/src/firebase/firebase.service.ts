@@ -8,7 +8,7 @@ import { Configs } from 'src/config/interfaces/config.interface';
 export class FirebaseService {
   private db: Firestore;
 
-  constructor(private configService: ConfigService<Configs, true>) {
+  constructor(private readonly configService: ConfigService<Configs, true>) {
     try {
       admin.initializeApp({
         projectId: this.configService.get('googleCloudProjectId'),
