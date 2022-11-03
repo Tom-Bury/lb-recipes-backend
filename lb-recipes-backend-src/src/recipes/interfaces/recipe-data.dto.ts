@@ -39,3 +39,9 @@ export class RecipeData {
   @IsDataURI()
   previewImgFileData?: string;
 }
+
+export class Recipe extends RecipeData {
+  @IsNotEmpty()
+  @IsString()
+  id!: string;
+}

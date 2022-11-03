@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -10,22 +11,44 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { RecipeData } from './interfaces/recipe-data.dto';
-import { Recipe } from './interfaces/recipe.interface';
+import { getErrorMessage } from 'src/utils/error.utils';
+import { Recipe, RecipeData } from './interfaces/recipe-data.dto';
+import { RecipeId } from './interfaces/recipe-id.dto';
 import { RecipesService } from './recipes.service';
 
 @Controller('recipes')
 export class RecipesController {
   constructor(private readonly recipesService: RecipesService) {}
 
-  @Get('recipe/:recipeId')
-  getRecipe(@Param('recipeId') recipeId: string) {
-    return `recipe ${recipeId}`;
+  @Get('recipe/:id')
+  async getRecipe(@Param() params: RecipeId): Promise<Recipe> {
+    const { id } = params;
+    try {
+      const data = await this.recipesService.getRecipe(id);
+      return data;
+    } catch (error) {
+      console.error(error);
+      throw new BadRequestException(
+        `Recipe with id '${id}' not found. Reason: ${getErrorMessage(error)}`,
+      );
+    }
   }
 
   @Put('recipe/:recipeId')
   updateRecipe() {
     return 'not implemented';
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('recipe/:id')
+  async deleteRecipe(@Param() params: RecipeId) {
+    const { id } = params;
+    if (await this.recipesService.recipeExists(id)) {
+      await this.recipesService.deleteRecipe(id);
+      return `Successfully deleted recipe data for id '${id}'`;
+    } else {
+      throw new BadRequestException(`No recipe with id '${id}' exists`);
+    }
   }
 
   @UseGuards(JwtAuthGuard)

@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { firestore } from 'firebase-admin';
+import { FieldValue } from 'firebase-admin/firestore';
 import Fuse from 'fuse.js';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { PreviewImageService } from 'src/preview-image/preview-image.service';
-import { RecipeData } from './interfaces/recipe-data.dto';
-import { Recipe, RecipeIndexEntry } from './interfaces/recipe.interface';
+import { Recipe, RecipeData } from './interfaces/recipe-data.dto';
+import { RecipeIndexEntry } from './interfaces/recipe.interface';
 
 @Injectable()
 export class RecipesService {
@@ -14,6 +15,27 @@ export class RecipesService {
     private readonly firebase: FirebaseService,
     private readonly previewImgService: PreviewImageService,
   ) {}
+
+  async getRecipe(recipeId: string): Promise<Recipe> {
+    const recipeSnapshot = await this.firebase
+      .collection('lb-recipes')
+      .doc(recipeId)
+      .get();
+
+    if (recipeSnapshot.exists) {
+      return recipeSnapshot.data() as Recipe;
+    } else {
+      throw new Error(`Recipe with id '${recipeId}' does not exist`);
+    }
+  }
+
+  async recipeExists(recipeId: string): Promise<boolean> {
+    const recipeSnapshot = await this.firebase
+      .collection('lb-recipes')
+      .doc(recipeId)
+      .get();
+    return recipeSnapshot.exists;
+  }
 
   async searchRecipes(query: string): Promise<Recipe[]> {
     const recipesTitleIndex = await this.firebase
@@ -52,11 +74,18 @@ export class RecipesService {
     return results.docs.map((doc) => ({
       ...doc.data(),
       id: doc.id,
-    }));
+    })) as Recipe[];
   }
 
   async addRecipe(recipeData: RecipeData): Promise<{ id: string }> {
     const { title, url, ingredients, instructions, tips } = recipeData;
+    const newRecipeDocRef = this.firebase.collection('lb-recipes').doc();
+
+    if ((await newRecipeDocRef.get()).exists) {
+      throw new Error(
+        `Tried creating a recipe with id '${newRecipeDocRef.id}' but one already exists`,
+      );
+    }
 
     const imgBuffer = await this.getImgBufferForRecipeData(recipeData);
     const [previewImgBuffer, blurHash] = await Promise.all([
@@ -64,7 +93,6 @@ export class RecipesService {
       await this.previewImgService.imgBufferToBlurHash(imgBuffer),
     ]);
 
-    const newRecipeDocRef = this.firebase.collection('lb-recipes').doc();
     const previewImgFileName = `${newRecipeDocRef.id}.webp`;
 
     await this.firebase.uploadFile(
@@ -103,6 +131,33 @@ export class RecipesService {
     return {
       id: newRecipeDocRef.id,
     };
+  }
+
+  async deleteRecipe(recipeId: string): Promise<void> {
+    const recipeDocDeletionPromise = this.firebase
+      .collection('lb-recipes')
+      .doc(recipeId)
+      .delete();
+
+    const recipesIndexRef = this.firebase
+      .collection('lb-recipes-metadata')
+      .doc('title-index');
+    const indexMapField = `titles.${recipeId}`;
+    const recipesIndexUpdatePromise = recipesIndexRef.update({
+      [indexMapField]: FieldValue.delete(),
+    });
+
+    const previewImgFileDeletionPromise =
+      this.firebase.deleteAllFilesWithPrefix(
+        recipeId,
+        'recipes_thumbs_liesbury-recipes-322314',
+      );
+
+    await Promise.all([
+      recipeDocDeletionPromise,
+      recipesIndexUpdatePromise,
+      previewImgFileDeletionPromise,
+    ]);
   }
 
   private async getImgBufferForRecipeData(
