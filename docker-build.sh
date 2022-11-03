@@ -1,6 +1,7 @@
 #!/bin/bash
 
 VERSION_FILE_PATH="lb-recipes-backend-src/src/config/version.ts"
+TF_VERSION_FILE_PATH="lb-recipes-backend-infr/version.tf"
 
 ### Increments the part of the string
 ## $1: version itself
@@ -29,6 +30,14 @@ git stash -u
 
 
 CURR_VERSION=$(cat $VERSION_FILE_PATH | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')
+CURR_TF_VERSION=$(cat $TF_VERSION_FILE_PATH | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')
+
+if [ "$CURR_VERSION" != "$CURR_TF_VERSION" ]; then
+  printf "💥 Terraform & JS versions are not equal. Exiting"
+  exit 1
+fi
+
+
 printf "\n🏷 Current version: $CURR_VERSION"
 while : ; do
   printf "\n❓ Select increment amount (0 – major, 1 – minor, 2 – patch, q - quit):\n"
@@ -51,6 +60,7 @@ done
 printf "\n\n🆕 New version: $NEW_VERSION\n"
 
 perl -pi -e "s/$CURR_VERSION/$NEW_VERSION/" $VERSION_FILE_PATH
+perl -pi -e "s/$CURR_VERSION/$NEW_VERSION/" $TF_VERSION_FILE_PATH
 git commit -am "ci: version bump v$NEW_VERSION"
 git tag "v$NEW_VERSION"
 
