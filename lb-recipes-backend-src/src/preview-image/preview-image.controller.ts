@@ -1,10 +1,5 @@
-import {
-  BadRequestException,
-  Controller,
-  Get,
-  NotFoundException,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
+import { GetPreviewImageQuery } from './interfaces/get-preview-image-query.dto';
 import { PreviewImageService } from './preview-image.service';
 
 @Controller('preview-image')
@@ -13,10 +8,9 @@ export class PreviewImageController {
 
   @Get('scrape')
   async getPreviewImage(
-    @Query('url') url?: string,
+    @Query() query: GetPreviewImageQuery,
   ): Promise<string | undefined> {
-    if (!url || url.length === 0)
-      throw new BadRequestException("Required query parameter 'url' missing");
+    const { url } = query;
 
     const result = await this.previewImageService.getPreviewImageUrlForUrl(
       decodeURI(url),

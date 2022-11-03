@@ -46,6 +46,7 @@ export class RecipesController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Put('recipe/:id')
   async updateRecipe(
     @Body() recipeData: RecipeData,
