@@ -18,7 +18,7 @@ export class PreviewImageController {
     if (!url || url.length === 0)
       throw new BadRequestException("Required query parameter 'url' missing");
 
-    const result = await this.previewImageService.getPreviewImageForUrl(
+    const result = await this.previewImageService.getPreviewImageUrlForUrl(
       decodeURI(url),
     );
 

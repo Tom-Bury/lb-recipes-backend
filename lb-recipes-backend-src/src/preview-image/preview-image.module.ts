@@ -5,5 +5,6 @@ import { PreviewImageService } from './preview-image.service';
 @Module({
   controllers: [PreviewImageController],
   providers: [PreviewImageService],
+  exports: [PreviewImageService],
 })
 export class PreviewImageModule {}
