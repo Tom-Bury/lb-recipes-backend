@@ -4,11 +4,12 @@ import * as admin from 'firebase-admin';
 import { Firestore, getFirestore } from 'firebase-admin/firestore';
 import { Configs } from 'src/config/interfaces/config.interface';
 import { Storage } from '@google-cloud/storage';
+import { applicationDefault } from 'firebase-admin/app';
 
 const COLLECTIONS = ['lb-recipes', 'lb-recipes-metadata'] as const;
 type TCollectionId = typeof COLLECTIONS[number];
 
-const BUCKETS = ['recipes_thumbs_liesbury-recipes-322314'] as const;
+const BUCKETS = ['test_recipes_thumbs_liesbury-recipes-322314'] as const;
 type TBucketId = typeof BUCKETS[number];
 
 @Injectable()
@@ -20,11 +21,12 @@ export class FirebaseService {
     try {
       admin.initializeApp({
         projectId: this.configService.get('googleCloudProjectId'),
-        credential: admin.credential.cert({
-          projectId: this.configService.get('googleCloudProjectId'),
-          clientEmail: this.configService.get('firebaseSAEmail'),
-          privateKey: this.configService.get('firebaseSAPrivateKey'),
-        }),
+        credential: applicationDefault(),
+        // admin.credential.cert({
+        //   projectId: this.configService.get('googleCloudProjectId'),
+        //   clientEmail: this.configService.get('firebaseSAEmail'),
+        //   privateKey: this.configService.get('firebaseSAPrivateKey'),
+        // }),
       });
       this.db = getFirestore();
       this.storage = new Storage();
