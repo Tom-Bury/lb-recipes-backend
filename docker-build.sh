@@ -51,7 +51,7 @@ done
 printf "\n\n🆕 New version: $NEW_VERSION\n"
 
 perl -pi -e "s/$CURR_VERSION/$NEW_VERSION/" $VERSION_FILE_PATH
-git commit -am "ci: build version $NEW_VERSION"
+git commit -am "ci: version bump v$NEW_VERSION"
 git tag "v$NEW_VERSION"
 
 printf "\n\n🐳 Building Docker image\n\n"
