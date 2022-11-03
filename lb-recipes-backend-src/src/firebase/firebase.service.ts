@@ -50,6 +50,20 @@ export class FirebaseService {
     return newFileRef.save(fileData);
   }
 
+  async deleteAllFilesWithPrefix(
+    fileNamePrefix: string,
+    bucketId: TBucketId,
+  ): Promise<void> {
+    const bucket = this.storage.bucket(bucketId);
+    return bucket.deleteFiles({ prefix: fileNamePrefix });
+  }
+
+  async listFilesWithPrefix(prefix: string, bucketId: TBucketId) {
+    const bucket = this.storage.bucket(bucketId);
+    const [files] = await bucket.getFiles({ prefix });
+    return files.map((file) => file.name);
+  }
+
   getStorageFileUrl(fileName: string, bucketId: TBucketId): string {
     return `https://storage.googleapis.com/${bucketId}/${fileName}`;
   }
