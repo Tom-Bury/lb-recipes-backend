@@ -7,7 +7,7 @@ resource "google_project_service" "run_api" {
 
 # Create the Cloud Run service
 resource "google_cloud_run_service" "recipes_service" {
-  name = "lb-recipes"
+  name = "lb-recipes-backend"
   location = var.region
 
   template {
@@ -18,18 +18,28 @@ resource "google_cloud_run_service" "recipes_service" {
         image = var.container_img
 
         env {
-          name = "GOOGLE_CLOUD_PROJECT_ID"
+          name = "TF_VAR_GOOGLE_CLOUD_PROJECT_ID"
           value = var.GOOGLE_CLOUD_PROJECT_ID
         }
 
         env {
-          name = "FIREBASE_SA_EMAIL"
+          name = "TF_VAR_FIREBASE_SA_EMAIL"
           value = var.FIREBASE_SA_EMAIL
         }
 
         env {
-          name = "FIREBASE_SA_PRIVATE_KEY"
+          name = "TF_VAR_FIREBASE_SA_PRIVATE_KEY"
           value = var.FIREBASE_SA_PRIVATE_KEY
+        }
+
+        env {
+          name = "TF_VAR_ADMIN_PASSWORD"
+          value = var.ADMIN_PASSWORD
+        }
+
+        env {
+          name = "TF_VAR_AUTH_JWT_SECRET"
+          value = var.AUTH_JWT_SECRET
         }
       }
     }

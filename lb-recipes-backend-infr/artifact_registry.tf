@@ -15,8 +15,3 @@ resource "google_artifact_registry_repository" "artifact_registry_repo" {
   # Waits for the Artifact Registry  API to be enabled
   depends_on = [google_project_service.artifact_registry_api]
 }
-
-
-# docker tag lb-recipes:v0.1 europe-west1-docker.pkg.dev/liesbury-recipes-322314/lb-recipes-artifact-registry/lb-recipes:v0.1
-
-# docker push europe-west1-docker.pkg.dev/liesbury-recipes-322314/lb-recipes-artifact-registry/lb-recipes:v0.1
