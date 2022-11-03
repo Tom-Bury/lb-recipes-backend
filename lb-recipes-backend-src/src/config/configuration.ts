@@ -1,4 +1,5 @@
 import { Configs } from './interfaces/config.interface';
+import { VERSION } from './version';
 
 export const config: () => Configs = () => {
   const result: Record<keyof Configs, string | number | undefined> = {
@@ -6,7 +7,7 @@ export const config: () => Configs = () => {
     googleCloudProjectId: process.env.TF_VAR_GOOGLE_CLOUD_PROJECT_ID,
     firebaseSAEmail: process.env.TF_VAR_FIREBASE_SA_EMAIL,
     firebaseSAPrivateKey: process.env.TF_VAR_FIREBASE_SA_PRIVATE_KEY,
-    version: '0.0',
+    version: VERSION,
     adminPassword: process.env.TF_VAR_ADMIN_PASSWORD,
     authJwtSecret: process.env.TF_VAR_AUTH_JWT_SECRET,
   };
