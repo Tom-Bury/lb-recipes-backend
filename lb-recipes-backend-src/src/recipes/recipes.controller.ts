@@ -14,6 +14,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { getErrorMessage } from 'src/utils/error.utils';
 import { Recipe, RecipeData } from './interfaces/recipe-data.dto';
 import { RecipeId } from './interfaces/recipe-id.dto';
+import { SearchRecipeQuery } from './interfaces/search-recipe-query.dto';
 import { RecipesService } from './recipes.service';
 
 @Controller('recipes')
@@ -39,6 +40,7 @@ export class RecipesController {
   async deleteRecipe(@Param() params: RecipeId) {
     const { id } = params;
     if (await this.recipesService.recipeExists(id)) {
+      console.info(`Delete recipe ${id}`);
       await this.recipesService.deleteRecipe(id);
       return `Successfully deleted recipe data for id '${id}'`;
     } else {
@@ -54,6 +56,7 @@ export class RecipesController {
   ) {
     const { id } = params;
     if (await this.recipesService.recipeExists(id)) {
+      console.info(`Update recipe ${id} with ${JSON.stringify(recipeData)}`);
       return this.recipesService.updateRecipe(recipeData, id);
     } else {
       throw new BadRequestException(`No recipe with id '${id}' exists`);
@@ -63,14 +66,16 @@ export class RecipesController {
   @UseGuards(JwtAuthGuard)
   @Post('new')
   async addRecipe(@Body() recipeData: RecipeData) {
+    console.info(`Add new recipe ${JSON.stringify(recipeData)}`);
     return this.recipesService.addNewRecipe(recipeData);
   }
 
   @Get('search')
-  async searchRecipes(@Query('query') query?: string): Promise<Recipe[]> {
-    if (!query || query.length === 0)
-      throw new BadRequestException("Required query parameter 'query' missing");
-
+  async searchRecipes(
+    @Query() queryParams: SearchRecipeQuery,
+  ): Promise<Recipe[]> {
+    const { query } = queryParams;
+    console.info(`Search recipe for: ${query}`);
     return this.recipesService.searchRecipes(query);
   }
 }

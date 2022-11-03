@@ -11,6 +11,7 @@ export class PreviewImageController {
     @Query() query: GetPreviewImageQuery,
   ): Promise<string | undefined> {
     const { url } = query;
+    console.info(`Get preview image for ${url}`);
 
     const result = await this.previewImageService.getPreviewImageUrlForUrl(
       decodeURI(url),

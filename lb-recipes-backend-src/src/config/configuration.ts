@@ -7,8 +7,8 @@ export const config: () => Configs = () => {
     firebaseSAEmail: process.env.TF_VAR_FIREBASE_SA_EMAIL,
     firebaseSAPrivateKey: process.env.TF_VAR_FIREBASE_SA_PRIVATE_KEY,
     version: '0.0',
-    adminPassword: process.env.TF_ADMIN_PASSWORD,
-    authJwtSecret: process.env.TF_AUTH_JWT_SECRET,
+    adminPassword: process.env.TF_VAR_ADMIN_PASSWORD,
+    authJwtSecret: process.env.TF_VAR_AUTH_JWT_SECRET,
   };
 
   for (const [key, value] of Object.entries(result)) {
