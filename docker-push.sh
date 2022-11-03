@@ -14,6 +14,5 @@ fi
 
 printf "🚢 Pushing version v$REQUESTED_VERSION\n\n"
 
-docker tag "lb-recipes-backend:v$REQUESTED_VERSION" \ 
-  "europe-west1-docker.pkg.dev/liesbury-recipes-322314/lb-recipes-artifact-registry/lb-recipes-backend:v$REQUESTED_VERSION"
+docker tag "lb-recipes-backend:v$REQUESTED_VERSION" "europe-west1-docker.pkg.dev/liesbury-recipes-322314/lb-recipes-artifact-registry/lb-recipes-backend:v$REQUESTED_VERSION"
 docker push "europe-west1-docker.pkg.dev/liesbury-recipes-322314/lb-recipes-artifact-registry/lb-recipes-backend:v$REQUESTED_VERSION"
