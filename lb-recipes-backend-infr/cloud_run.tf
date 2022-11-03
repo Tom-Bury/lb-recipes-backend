@@ -5,6 +5,18 @@ resource "google_project_service" "run_api" {
   disable_on_destroy = true
 }
 
+# Service account for the cloud run instance
+resource "google_service_account" "sa_recipes_service" {
+  account_id   = "sa-lb-recipes-backend-cloud-run-service"
+  display_name = "sa-lb-recipes-backend-cloud-run-service"
+}
+
+# Ensure service account can access FireStore
+resource google_project_iam_member "firestore_user" {
+  role   = "roles/datastore.user"
+  member = "serviceAccount:${google_service_account.sa_recipes_service.email}"
+}
+
 # Create the Cloud Run service
 resource "google_cloud_run_service" "recipes_service" {
   name = "lb-recipes-backend"
@@ -13,6 +25,7 @@ resource "google_cloud_run_service" "recipes_service" {
   template {
     spec {
       timeout_seconds = 15
+      service_account_name = google_service_account.sa_recipes_service.email
 
       containers {
         image = var.container_img
