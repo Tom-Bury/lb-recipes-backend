@@ -77,8 +77,7 @@ export class RecipesService {
     })) as Recipe[];
   }
 
-  async addRecipe(recipeData: RecipeData): Promise<{ id: string }> {
-    const { title, url, ingredients, instructions, tips } = recipeData;
+  async addNewRecipe(recipeData: RecipeData): Promise<{ id: string }> {
     const newRecipeDocRef = this.firebase.collection('lb-recipes').doc();
 
     if ((await newRecipeDocRef.get()).exists) {
@@ -87,13 +86,23 @@ export class RecipesService {
       );
     }
 
+    return this.updateRecipe(recipeData, newRecipeDocRef.id);
+  }
+
+  async updateRecipe(
+    recipeData: RecipeData,
+    recipeId: string,
+  ): Promise<{ id: string }> {
+    const { title, url, ingredients, instructions, tips } = recipeData;
+    const recipeDocRef = this.firebase.collection('lb-recipes').doc(recipeId);
+
     const imgBuffer = await this.getImgBufferForRecipeData(recipeData);
     const [previewImgBuffer, blurHash] = await Promise.all([
       await this.previewImgService.imgBufferToPreviewImgBuffer(imgBuffer),
       await this.previewImgService.imgBufferToBlurHash(imgBuffer),
     ]);
 
-    const previewImgFileName = `${newRecipeDocRef.id}.webp`;
+    const previewImgFileName = `${recipeId}.webp`;
 
     await this.firebase.uploadFile(
       previewImgBuffer,
@@ -101,7 +110,7 @@ export class RecipesService {
       'recipes_thumbs_liesbury-recipes-322314',
     );
 
-    const recipesDocPromise = newRecipeDocRef.set({
+    const recipesDocPromise = recipeDocRef.set({
       title,
       url,
       imgUrl: this.firebase.getStorageFileUrl(
@@ -118,18 +127,18 @@ export class RecipesService {
     const recipesIndexRef = this.firebase
       .collection('lb-recipes-metadata')
       .doc('title-index');
-    const indexMapField = `titles.${newRecipeDocRef.id}`;
+    const indexMapField = `titles.${recipeId}`;
     const recipesIndexPromise = recipesIndexRef.update({
       [indexMapField]: {
         title,
-        recipeId: newRecipeDocRef.id,
+        recipeId,
       },
     });
 
     await Promise.all([recipesDocPromise, recipesIndexPromise]);
 
     return {
-      id: newRecipeDocRef.id,
+      id: recipeId,
     };
   }
 

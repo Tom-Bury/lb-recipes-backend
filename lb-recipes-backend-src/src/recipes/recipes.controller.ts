@@ -34,11 +34,6 @@ export class RecipesController {
     }
   }
 
-  @Put('recipe/:recipeId')
-  updateRecipe() {
-    return 'not implemented';
-  }
-
   @UseGuards(JwtAuthGuard)
   @Delete('recipe/:id')
   async deleteRecipe(@Param() params: RecipeId) {
@@ -51,10 +46,23 @@ export class RecipesController {
     }
   }
 
+  @Put('recipe/:id')
+  async updateRecipe(
+    @Body() recipeData: RecipeData,
+    @Param() params: RecipeId,
+  ) {
+    const { id } = params;
+    if (await this.recipesService.recipeExists(id)) {
+      return this.recipesService.updateRecipe(recipeData, id);
+    } else {
+      throw new BadRequestException(`No recipe with id '${id}' exists`);
+    }
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('new')
   async addRecipe(@Body() recipeData: RecipeData) {
-    return this.recipesService.addRecipe(recipeData);
+    return this.recipesService.addNewRecipe(recipeData);
   }
 
   @Get('search')
