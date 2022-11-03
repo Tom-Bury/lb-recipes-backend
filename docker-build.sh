@@ -62,4 +62,4 @@ docker build -t "lb-recipes-backend:v$NEW_VERSION" .
 printf "\n\n🐳 Done 🎉\n\n"
 docker image ls
 
-git stash pop --silent
+git stash pop -q
