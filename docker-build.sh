@@ -1,5 +1,7 @@
 #!/bin/bash
 
+trap "git stash pop -q" EXIT
+
 VERSION_FILE_PATH="lb-recipes-backend-src/src/config/version.ts"
 TF_VERSION_FILE_PATH="lb-recipes-backend-infr/version.tf"
 
@@ -71,5 +73,3 @@ docker build -t "lb-recipes-backend:v$NEW_VERSION" .
 
 printf "\n\n🐳 Done 🎉\n\n"
 docker image ls
-
-git stash pop -q
