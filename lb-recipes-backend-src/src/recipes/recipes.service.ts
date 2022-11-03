@@ -1,14 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { firestore } from 'firebase-admin';
 import Fuse from 'fuse.js';
 import { FirebaseService } from 'src/firebase/firebase.service';
+import { PreviewImageService } from 'src/preview-image/preview-image.service';
+import { RecipeData } from './interfaces/recipe-data.dto';
 import { Recipe, RecipeIndexEntry } from './interfaces/recipe.interface';
 
 @Injectable()
 export class RecipesService {
   MAX_NB_SEARCH_ITEMS = 10;
 
-  constructor(private firebase: FirebaseService) {}
+  constructor(
+    private readonly firebase: FirebaseService,
+    private readonly previewImgService: PreviewImageService,
+  ) {}
 
   async searchRecipes(query: string): Promise<Recipe[]> {
     const recipesTitleIndex = await this.firebase
@@ -48,5 +53,84 @@ export class RecipesService {
       ...doc.data(),
       id: doc.id,
     }));
+  }
+
+  async addRecipe(recipeData: RecipeData): Promise<{ id: string }> {
+    const { title, url, ingredients, instructions, tips } = recipeData;
+
+    const imgBuffer = await this.getImgBufferForRecipeData(recipeData);
+    const [previewImgBuffer, blurHash] = await Promise.all([
+      await this.previewImgService.imgBufferToPreviewImgBuffer(imgBuffer),
+      await this.previewImgService.imgBufferToBlurHash(imgBuffer),
+    ]);
+
+    const newRecipeDocRef = this.firebase.collection('lb-recipes').doc();
+    const previewImgFileName = `${newRecipeDocRef.id}.webp`;
+
+    await this.firebase.uploadFile(
+      previewImgBuffer,
+      previewImgFileName,
+      'recipes_thumbs_liesbury-recipes-322314',
+    );
+
+    const recipesDocPromise = newRecipeDocRef.set({
+      title,
+      url,
+      imgUrl: this.firebase.getStorageFileUrl(
+        previewImgFileName,
+        'recipes_thumbs_liesbury-recipes-322314',
+      ),
+      previewImgFileName,
+      ingredients,
+      instructions,
+      tips,
+      blurHash,
+    });
+
+    const recipesIndexRef = this.firebase
+      .collection('lb-recipes-metadata')
+      .doc('title-index');
+    const indexMapField = `titles.${newRecipeDocRef.id}`;
+    const recipesIndexPromise = recipesIndexRef.update({
+      [indexMapField]: {
+        title,
+        recipeId: newRecipeDocRef.id,
+      },
+    });
+
+    await Promise.all([recipesDocPromise, recipesIndexPromise]);
+
+    return {
+      id: newRecipeDocRef.id,
+    };
+  }
+
+  private async getImgBufferForRecipeData(
+    recipeData: RecipeData,
+  ): Promise<Buffer> {
+    const { previewImgFileData, imgUrl, url } = recipeData;
+    let imgBuffer;
+
+    if (previewImgFileData) {
+      imgBuffer =
+        this.previewImgService.base64ImgURIDataToBuffer(previewImgFileData);
+    } else if (imgUrl && imgUrl.length > 0) {
+      imgBuffer = await this.previewImgService.imgUrlToImgBuffer(imgUrl);
+    } else if (url && url.length > 0) {
+      const previewImgUrl =
+        await this.previewImgService.getPreviewImageUrlForUrl(url);
+      if (!previewImgUrl || previewImgUrl.length === 0) {
+        throw new BadRequestException(
+          `No preview image found for given recipe url: ${url}`,
+        );
+      }
+      imgBuffer = await this.previewImgService.imgUrlToImgBuffer(previewImgUrl);
+    } else {
+      throw new BadRequestException(
+        'One of `previewImageFileData`, `url` or `imgUrl` must be specified',
+      );
+    }
+
+    return imgBuffer;
   }
 }
