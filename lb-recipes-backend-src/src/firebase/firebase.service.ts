@@ -9,7 +9,7 @@ import { applicationDefault, Credential } from 'firebase-admin/app';
 const COLLECTIONS = ['lb-recipes', 'lb-recipes-metadata'] as const;
 type TCollectionId = typeof COLLECTIONS[number];
 
-const BUCKETS = ['lb_recipes_previews-liesbury-recipes-322314'] as const;
+const BUCKETS = ['lb_recipes_previews_liesbury-recipes-322314'] as const;
 type TBucketId = typeof BUCKETS[number];
 
 @Injectable()
