@@ -4,7 +4,7 @@ import * as admin from 'firebase-admin';
 import { Firestore, getFirestore } from 'firebase-admin/firestore';
 import { Configs } from 'src/config/interfaces/config.interface';
 import { Storage } from '@google-cloud/storage';
-import { applicationDefault } from 'firebase-admin/app';
+import { applicationDefault, Credential } from 'firebase-admin/app';
 
 const COLLECTIONS = ['lb-recipes', 'lb-recipes-metadata'] as const;
 type TCollectionId = typeof COLLECTIONS[number];
@@ -18,22 +18,28 @@ export class FirebaseService {
   private storage: Storage;
 
   constructor(private readonly configService: ConfigService<Configs, true>) {
+    if (this.configService.get('usePassedServiceAccountCredentials')) {
+      console.info('Using .env passed service account credentials');
+    } else {
+      console.info('Using application default credentials');
+    }
     try {
       admin.initializeApp({
         projectId: this.configService.get('googleCloudProjectId'),
-        credential: applicationDefault(),
-        // admin.credential.cert({
-        //   projectId: this.configService.get('googleCloudProjectId'),
-        //   clientEmail: this.configService.get('firebaseSAEmail'),
-        //   privateKey: this.configService.get('firebaseSAPrivateKey'),
-        // }),
+        credential: this.getFirestoreCredentials(),
       });
       this.db = getFirestore();
-      this.storage = new Storage();
+      this.storage = new Storage({
+        projectId: this.configService.get('googleCloudProjectId'),
+        ...this.getCloudStorageCredentials(),
+      });
       this.db.settings({ ignoreUndefinedProperties: true });
     } catch (error) {
       console.error(error);
-      this.storage = new Storage();
+      this.storage = new Storage({
+        projectId: this.configService.get('googleCloudProjectId'),
+        ...this.getCloudStorageCredentials(),
+      });
       this.db = getFirestore();
     }
   }
@@ -68,5 +74,26 @@ export class FirebaseService {
 
   getStorageFileUrl(fileName: string, bucketId: TBucketId): string {
     return `https://storage.googleapis.com/${bucketId}/${fileName}`;
+  }
+
+  private getFirestoreCredentials(): Credential {
+    return this.configService.get('usePassedServiceAccountCredentials')
+      ? admin.credential.cert({
+          projectId: this.configService.get('googleCloudProjectId'),
+          clientEmail: this.configService.get('serviceAccountEmail'),
+          privateKey: this.configService.get('serviceAccountPrivateKey'),
+        })
+      : applicationDefault();
+  }
+
+  private getCloudStorageCredentials():
+    | { client_email: string; private_key: string }
+    | Record<string, never> {
+    return this.configService.get('usePassedServiceAccountCredentials')
+      ? {
+          client_email: this.configService.get('serviceAccountEmail'),
+          private_key: this.configService.get('serviceAccountPrivateKey'),
+        }
+      : {};
   }
 }
