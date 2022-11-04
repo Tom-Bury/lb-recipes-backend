@@ -37,7 +37,7 @@ export class RecipesController {
 
   @UseGuards(JwtAuthGuard)
   @Delete('recipe/:id')
-  async deleteRecipe(@Param() params: RecipeId) {
+  async deleteRecipe(@Param() params: RecipeId): Promise<string> {
     const { id } = params;
     if (await this.recipesService.recipeExists(id)) {
       console.info(`Delete recipe ${id}`);
@@ -53,7 +53,7 @@ export class RecipesController {
   async updateRecipe(
     @Body() recipeData: RecipeData,
     @Param() params: RecipeId,
-  ) {
+  ): Promise<{ id: string }> {
     const { id } = params;
     if (await this.recipesService.recipeExists(id)) {
       console.info(`Update recipe ${id} with ${JSON.stringify(recipeData)}`);
@@ -65,7 +65,7 @@ export class RecipesController {
 
   @UseGuards(JwtAuthGuard)
   @Post('new')
-  async addRecipe(@Body() recipeData: RecipeData) {
+  async addRecipe(@Body() recipeData: RecipeData): Promise<{ id: string }> {
     console.info(`Add new recipe ${JSON.stringify(recipeData)}`);
     return this.recipesService.addNewRecipe(recipeData);
   }
