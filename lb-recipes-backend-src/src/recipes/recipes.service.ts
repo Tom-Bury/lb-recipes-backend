@@ -107,7 +107,7 @@ export class RecipesService {
     await this.firebase.uploadFile(
       previewImgBuffer,
       previewImgFileName,
-      'test_recipes_thumbs_liesbury-recipes-322314',
+      'lb_recipes_previews-liesbury-recipes-322314',
     );
 
     const recipesDocPromise = recipeDocRef.set({
@@ -115,7 +115,7 @@ export class RecipesService {
       url,
       imgUrl: this.firebase.getStorageFileUrl(
         previewImgFileName,
-        'test_recipes_thumbs_liesbury-recipes-322314',
+        'lb_recipes_previews-liesbury-recipes-322314',
       ),
       previewImgFileName,
       ingredients,
@@ -159,7 +159,7 @@ export class RecipesService {
     const previewImgFileDeletionPromise =
       this.firebase.deleteAllFilesWithPrefix(
         recipeId,
-        'test_recipes_thumbs_liesbury-recipes-322314',
+        'lb_recipes_previews-liesbury-recipes-322314',
       );
 
     await Promise.all([
