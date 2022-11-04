@@ -37,16 +37,6 @@ resource "google_cloud_run_service" "recipes_service" {
         }
 
         env {
-          name = "TF_VAR_FIREBASE_SA_EMAIL"
-          value = var.FIREBASE_SA_EMAIL
-        }
-
-        env {
-          name = "TF_VAR_FIREBASE_SA_PRIVATE_KEY"
-          value = var.FIREBASE_SA_PRIVATE_KEY
-        }
-
-        env {
           name = "TF_VAR_ADMIN_PASSWORD"
           value = var.ADMIN_PASSWORD
         }
