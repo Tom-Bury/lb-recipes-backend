@@ -10,8 +10,9 @@ export const config: () => Configs = () => {
     version: VERSION,
     serviceAccountEmail: process.env.CLOUD_RUN_SA_EMAIL || 'unused',
     serviceAccountPrivateKey: process.env.CLOUD_RUN_SA_PRIVATE_KEY || 'unused',
-    usePassedServiceAccountCredentials:
+    usePassedServiceAccountCredentials: Boolean(
       process.env.CLOUD_RUN_SA_EMAIL && process.env.CLOUD_RUN_SA_PRIVATE_KEY,
+    ),
   };
 
   for (const [key, value] of Object.entries(result)) {
