@@ -7,12 +7,13 @@ resource "google_project_service" "run_api" {
 
 # Service account for the cloud run instance
 resource "google_service_account" "sa_recipes_service" {
-  account_id   = "sa-lb-recipes-backend-cloud-run-service"
-  display_name = "sa-lb-recipes-backend-cloud-run-service"
+  account_id   = "sa-lb-recipes-backend"
+  display_name = "sa-lb-recipes-backend"
 }
 
 # Ensure service account can access FireStore
 resource google_project_iam_member "firestore_user" {
+  project = var.GOOGLE_CLOUD_PROJECT_ID
   role   = "roles/datastore.user"
   member = "serviceAccount:${google_service_account.sa_recipes_service.email}"
 }
