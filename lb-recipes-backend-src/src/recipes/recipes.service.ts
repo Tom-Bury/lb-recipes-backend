@@ -53,6 +53,8 @@ export class RecipesService {
 
     const fuse = new Fuse(allRecipes, {
       keys: ['title'],
+      ignoreLocation: true,
+      threshold: 0.45,
     });
     const matchingIds = fuse.search(query).map((item) => item.item.recipeId);
 
