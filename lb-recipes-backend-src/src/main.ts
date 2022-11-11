@@ -5,7 +5,9 @@ import { AppModule } from './app.module';
 declare const module: any;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: false,
+  });
 
   // Remove any properties from request bodies etc that are not defined in the set types
   app.useGlobalPipes(
