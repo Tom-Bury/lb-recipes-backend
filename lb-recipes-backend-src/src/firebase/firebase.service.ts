@@ -1,7 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as admin from 'firebase-admin';
-import { Firestore, getFirestore } from 'firebase-admin/firestore';
+import {
+  DocumentData,
+  DocumentReference,
+  DocumentSnapshot,
+  Firestore,
+  getFirestore,
+  ReadOptions,
+} from 'firebase-admin/firestore';
 import { Configs } from 'src/config/interfaces/config.interface';
 import { Storage } from '@google-cloud/storage';
 import { applicationDefault, Credential } from 'firebase-admin/app';
@@ -46,6 +53,14 @@ export class FirebaseService {
 
   collection(collectionId: TCollectionId) {
     return this.db.collection(collectionId);
+  }
+
+  getAll(
+    ...documentRefsOrReadOptions: Array<
+      DocumentReference<DocumentData> | ReadOptions
+    >
+  ) {
+    return this.db.getAll(...documentRefsOrReadOptions);
   }
 
   async uploadFile(
