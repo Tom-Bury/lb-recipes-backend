@@ -88,11 +88,11 @@ export class RecipesService {
     const { title, url, ingredients, instructions, tips } = recipeData;
     const recipeDocRef = this.firebase.collection('lb-recipes').doc(recipeId);
 
-    const imgBuffer = await this.getImgBufferForRecipeData(recipeData);
-    const [previewImgBuffer, blurHash] = await Promise.all([
-      await this.previewImgService.imgBufferToPreviewImgBuffer(imgBuffer),
-      await this.previewImgService.imgBufferToBlurHash(imgBuffer),
-    ]);
+    const { previewImgFileName, blurHash } =
+      await this.previewImgService.uploadRecipeThumbToStorageBucket(
+        recipeData,
+        recipeId,
+      );
 
     const previewImgFileName = `${recipeId}.webp`;
 
@@ -161,32 +161,5 @@ export class RecipesService {
     ]);
   }
 
-  private async getImgBufferForRecipeData(
-    recipeData: RecipeData,
-  ): Promise<Buffer> {
-    const { previewImgFileData, imgUrl, url } = recipeData;
-    let imgBuffer;
-
-    if (previewImgFileData) {
-      imgBuffer =
-        this.previewImgService.base64ImgURIDataToBuffer(previewImgFileData);
-    } else if (imgUrl && imgUrl.length > 0) {
-      imgBuffer = await this.previewImgService.imgUrlToImgBuffer(imgUrl);
-    } else if (url && url.length > 0) {
-      const previewImgUrl =
-        await this.previewImgService.getPreviewImageUrlForUrl(url);
-      if (!previewImgUrl || previewImgUrl.length === 0) {
-        throw new BadRequestException(
-          `No preview image found for given recipe url: ${url}`,
-        );
-      }
-      imgBuffer = await this.previewImgService.imgUrlToImgBuffer(previewImgUrl);
-    } else {
-      throw new BadRequestException(
-        'One of `previewImageFileData`, `url` or `imgUrl` must be specified',
-      );
-    }
-
-    return imgBuffer;
   }
 }
