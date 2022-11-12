@@ -4,7 +4,7 @@ import * as admin from 'firebase-admin';
 import {
   DocumentData,
   DocumentReference,
-  DocumentSnapshot,
+  FieldValue,
   Firestore,
   getFirestore,
   ReadOptions,
@@ -13,7 +13,11 @@ import { Configs } from 'src/config/interfaces/config.interface';
 import { Storage } from '@google-cloud/storage';
 import { applicationDefault, Credential } from 'firebase-admin/app';
 
-const COLLECTIONS = ['lb-recipes', 'lb-recipes-metadata'] as const;
+const COLLECTIONS = [
+  'lb-recipes',
+  'lb-recipes-metadata',
+  'lb-recipes-categories',
+] as const;
 type TCollectionId = typeof COLLECTIONS[number];
 
 const BUCKETS = ['lb_recipes_previews_liesbury-recipes-322314'] as const;
@@ -23,6 +27,9 @@ type TBucketId = typeof BUCKETS[number];
 export class FirebaseService {
   private db: Firestore;
   private storage: Storage;
+
+  public static INCREMENT = FieldValue.increment(1);
+  public static DECREMENT = FieldValue.increment(-1);
 
   constructor(private readonly configService: ConfigService<Configs, true>) {
     if (this.configService.get('usePassedServiceAccountCredentials')) {
@@ -61,6 +68,10 @@ export class FirebaseService {
     >
   ) {
     return this.db.getAll(...documentRefsOrReadOptions);
+  }
+
+  batch() {
+    return this.db.batch();
   }
 
   async uploadFile(
