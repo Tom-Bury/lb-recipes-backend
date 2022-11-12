@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { WriteBatch } from 'firebase-admin/firestore';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { nonNullable } from 'src/validation/typeValidation.utils';
+import { Recipe } from '../interfaces/recipe-data.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -24,6 +25,44 @@ export class CategoriesService {
     }));
 
     return allCategories;
+  }
+
+  async getRecipesForCategories(categories: string[]): Promise<Recipe[]> {
+    const categoryRecipeIdsLists = await Promise.all(
+      categories.map(
+        (category) =>
+          new Promise<Set<string>>((resolve) => {
+            this.firebase
+              .collection('lb-recipes-categories')
+              .doc(category)
+              .collection('entries')
+              .get()
+              .then((result) => new Set(result.docs.map((doc) => doc.id)))
+              .then((ids) => resolve(ids));
+          }),
+      ),
+    );
+
+    const intersectingIds = [
+      ...categoryRecipeIdsLists.reduce(
+        (prev, curr) =>
+          new Set([...prev].filter((element) => curr.has(element))),
+        new Set(),
+      ),
+    ];
+
+    if (intersectingIds.length === 0) return [];
+
+    const results = await this.firebase.getAll(
+      ...intersectingIds.map((id) =>
+        this.firebase.collection('lb-recipes').doc(id),
+      ),
+    );
+
+    return results.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    })) as Recipe[];
   }
 
   async removeRecipeFromAllCategories(recipeId: string): Promise<void> {

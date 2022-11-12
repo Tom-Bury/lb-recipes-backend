@@ -8,7 +8,7 @@ export class CategoriesController {
 
   @Get('')
   async getRecipesForCategories(@Query() { query }: StringArrayQuery) {
-    return this.categoriesService.getAllNonEmptyCategories();
+    return this.categoriesService.getRecipesForCategories(query);
   }
 
   @Get('counts')
