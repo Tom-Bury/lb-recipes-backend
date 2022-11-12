@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { WriteBatch } from 'firebase-admin/firestore';
 import { FirebaseService } from 'src/firebase/firebase.service';
-import { nonNullable } from 'src/utils/validation.utils';
+import { nonNullable } from 'src/validation/typeValidation.utils';
 
 @Injectable()
 export class CategoriesService {
