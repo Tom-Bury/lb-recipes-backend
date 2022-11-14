@@ -38,6 +38,13 @@ export class RecipeData {
   @IsOptional()
   @IsDataURI()
   previewImgFileData?: string;
+
+  @IsOptional()
+  @ArrayNotEmpty()
+  @IsString({
+    each: true,
+  })
+  categories?: string[];
 }
 
 export class Recipe extends RecipeData {

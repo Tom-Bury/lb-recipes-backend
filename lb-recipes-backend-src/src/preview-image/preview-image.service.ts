@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import ogs from 'open-graph-scraper';
 import { Buffer } from 'node:buffer';
 import sharp from 'sharp';
 import { getPlaiceholder } from 'plaiceholder';
+import { RecipeData } from 'src/recipes/interfaces/recipe-data.dto';
+import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class PreviewImageService {
+  constructor(private readonly firebase: FirebaseService) {}
+
   async getPreviewImageUrlForUrl(url: string): Promise<string | undefined> {
     const ogsOptions = { url: url.trim(), timeout: 5000 };
     try {
@@ -26,7 +30,55 @@ export class PreviewImageService {
     }
   }
 
-  base64ImgURIDataToBuffer(imgDataURIData: string): Buffer {
+  async getImgBufferForRecipeData(recipeData: RecipeData): Promise<Buffer> {
+    const { previewImgFileData, imgUrl, url } = recipeData;
+    let imgBuffer;
+
+    if (previewImgFileData) {
+      imgBuffer = this.base64ImgURIDataToBuffer(previewImgFileData);
+    } else if (imgUrl && imgUrl.length > 0) {
+      imgBuffer = await this.imgUrlToImgBuffer(imgUrl);
+    } else if (url && url.length > 0) {
+      const previewImgUrl = await this.getPreviewImageUrlForUrl(url);
+      if (!previewImgUrl || previewImgUrl.length === 0) {
+        throw new BadRequestException(
+          `No preview image found for given recipe url: ${url}`,
+        );
+      }
+      imgBuffer = await this.imgUrlToImgBuffer(previewImgUrl);
+    } else {
+      throw new BadRequestException(
+        'One of `previewImageFileData`, `url` or `imgUrl` must be specified',
+      );
+    }
+
+    return imgBuffer;
+  }
+
+  async uploadRecipeThumbToStorageBucket(
+    recipeData: RecipeData,
+    recipeId: string,
+  ): Promise<{ previewImgFileName: string; blurHash: string }> {
+    const imgBuffer = await this.getImgBufferForRecipeData(recipeData);
+    const [previewImgBuffer, blurHash] = await Promise.all([
+      await this.imgBufferToPreviewImgBuffer(imgBuffer),
+      await this.imgBufferToBlurHash(imgBuffer),
+    ]);
+
+    const previewImgFileName = `${recipeId}.webp`;
+
+    await this.firebase.uploadFile(
+      previewImgBuffer,
+      previewImgFileName,
+      'lb_recipes_previews_liesbury-recipes-322314',
+    );
+    return {
+      previewImgFileName,
+      blurHash,
+    };
+  }
+
+  private base64ImgURIDataToBuffer(imgDataURIData: string): Buffer {
     const base64ImgData = imgDataURIData.split(',')[1];
 
     if (!base64ImgData || base64ImgData.length === 0)
@@ -35,20 +87,22 @@ export class PreviewImageService {
     return Buffer.from(base64ImgData, 'base64');
   }
 
-  async imgUrlToImgBuffer(imgUrl: string): Promise<Buffer> {
+  private async imgUrlToImgBuffer(imgUrl: string): Promise<Buffer> {
     const res = await fetch(imgUrl);
     const blob = await res.blob();
     return Buffer.from(await blob.arrayBuffer());
   }
 
-  async imgBufferToPreviewImgBuffer(imgBuffer: Buffer): Promise<Buffer> {
+  private async imgBufferToPreviewImgBuffer(
+    imgBuffer: Buffer,
+  ): Promise<Buffer> {
     return await sharp(imgBuffer)
       .resize(1000) // limit width
       .toFormat('webp')
       .toBuffer();
   }
 
-  async imgBufferToBlurHash(imgBuffer: Buffer): Promise<string> {
+  private async imgBufferToBlurHash(imgBuffer: Buffer): Promise<string> {
     const { base64: blurHash } = await getPlaiceholder(imgBuffer, { size: 64 });
     return blurHash;
   }

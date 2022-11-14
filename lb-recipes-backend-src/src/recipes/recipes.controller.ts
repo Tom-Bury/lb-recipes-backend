@@ -12,9 +12,9 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { getErrorMessage } from 'src/utils/error.utils';
+import { StringQuery } from 'src/validation/interfaces/query.dto';
 import { Recipe, RecipeData } from './interfaces/recipe-data.dto';
 import { RecipeId } from './interfaces/recipe-id.dto';
-import { SearchRecipeQuery } from './interfaces/search-recipe-query.dto';
 import { RecipesService } from './recipes.service';
 
 @Controller('recipes')
@@ -71,10 +71,7 @@ export class RecipesController {
   }
 
   @Get('search')
-  async searchRecipes(
-    @Query() queryParams: SearchRecipeQuery,
-  ): Promise<Recipe[]> {
-    const { query } = queryParams;
+  async searchRecipes(@Query() { query }: StringQuery): Promise<Recipe[]> {
     console.info(`Search recipe for: ${query}`);
     return this.recipesService.searchRecipes(query);
   }

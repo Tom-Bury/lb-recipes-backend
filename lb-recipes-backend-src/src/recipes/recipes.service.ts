@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { FieldValue } from 'firebase-admin/firestore';
+import { Injectable } from '@nestjs/common';
+import { FieldValue, WriteBatch } from 'firebase-admin/firestore';
 import Fuse from 'fuse.js';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { PreviewImageService } from 'src/preview-image/preview-image.service';
+import { CategoriesService } from './categories/categories.service';
 import { Recipe, RecipeData } from './interfaces/recipe-data.dto';
 import { RecipeIndexEntry } from './interfaces/recipe.interface';
 
@@ -11,6 +12,7 @@ export class RecipesService {
   constructor(
     private readonly firebase: FirebaseService,
     private readonly previewImgService: PreviewImageService,
+    private readonly categoriesService: CategoriesService,
   ) {}
 
   async getRecipe(recipeId: string): Promise<Recipe> {
@@ -85,49 +87,36 @@ export class RecipesService {
     recipeData: RecipeData,
     recipeId: string,
   ): Promise<{ id: string }> {
-    const { title, url, ingredients, instructions, tips } = recipeData;
-    const recipeDocRef = this.firebase.collection('lb-recipes').doc(recipeId);
+    const { previewImgFileName, blurHash } =
+      await this.previewImgService.uploadRecipeThumbToStorageBucket(
+        recipeData,
+        recipeId,
+      );
 
-    const imgBuffer = await this.getImgBufferForRecipeData(recipeData);
-    const [previewImgBuffer, blurHash] = await Promise.all([
-      await this.previewImgService.imgBufferToPreviewImgBuffer(imgBuffer),
-      await this.previewImgService.imgBufferToBlurHash(imgBuffer),
-    ]);
+    await this.categoriesService.removeRecipeFromAllCategories(recipeId);
 
-    const previewImgFileName = `${recipeId}.webp`;
-
-    await this.firebase.uploadFile(
-      previewImgBuffer,
-      previewImgFileName,
-      'lb_recipes_previews_liesbury-recipes-322314',
+    const sanitizedCategories = recipeData.categories?.map((category) =>
+      category.trim().toLowerCase(),
     );
 
-    const recipesDocPromise = recipeDocRef.set({
-      title,
-      url,
+    const writeBatch = this.firebase.batch();
+    this.categoriesService.batchWriteRecipeCategories(
+      writeBatch,
+      recipeId,
+      sanitizedCategories,
+    );
+    this.batchUpdateRecipe(writeBatch, recipeId, {
+      ...recipeData,
+      categories: sanitizedCategories,
+      blurHash,
+      previewImgFileName,
       imgUrl: this.firebase.getStorageFileUrl(
         previewImgFileName,
         'lb_recipes_previews_liesbury-recipes-322314',
       ),
-      previewImgFileName,
-      ingredients,
-      instructions,
-      tips,
-      blurHash,
     });
 
-    const recipesIndexRef = this.firebase
-      .collection('lb-recipes-metadata')
-      .doc('title-index');
-    const indexMapField = `titles.${recipeId}`;
-    const recipesIndexPromise = recipesIndexRef.update({
-      [indexMapField]: {
-        title,
-        recipeId,
-      },
-    });
-
-    await Promise.all([recipesDocPromise, recipesIndexPromise]);
+    await writeBatch.commit();
 
     return {
       id: recipeId,
@@ -135,18 +124,18 @@ export class RecipesService {
   }
 
   async deleteRecipe(recipeId: string): Promise<void> {
-    const recipeDocDeletionPromise = this.firebase
-      .collection('lb-recipes')
-      .doc(recipeId)
-      .delete();
-
-    const recipesIndexRef = this.firebase
-      .collection('lb-recipes-metadata')
-      .doc('title-index');
-    const indexMapField = `titles.${recipeId}`;
-    const recipesIndexUpdatePromise = recipesIndexRef.update({
-      [indexMapField]: FieldValue.delete(),
-    });
+    const deleteBatch = this.firebase.batch();
+    deleteBatch.delete(this.firebase.collection('lb-recipes').doc(recipeId));
+    deleteBatch.update(
+      this.firebase.collection('lb-recipes-metadata').doc('title-index'),
+      {
+        [`titles.${recipeId}`]: FieldValue.delete(),
+      },
+    );
+    await this.categoriesService.batchRemoveRecipeFromAllCategories(
+      deleteBatch,
+      recipeId,
+    );
 
     const previewImgFileDeletionPromise =
       this.firebase.deleteAllFilesWithPrefix(
@@ -154,39 +143,45 @@ export class RecipesService {
         'lb_recipes_previews_liesbury-recipes-322314',
       );
 
-    await Promise.all([
-      recipeDocDeletionPromise,
-      recipesIndexUpdatePromise,
-      previewImgFileDeletionPromise,
-    ]);
+    await Promise.all([deleteBatch.commit(), previewImgFileDeletionPromise]);
   }
 
-  private async getImgBufferForRecipeData(
-    recipeData: RecipeData,
-  ): Promise<Buffer> {
-    const { previewImgFileData, imgUrl, url } = recipeData;
-    let imgBuffer;
-
-    if (previewImgFileData) {
-      imgBuffer =
-        this.previewImgService.base64ImgURIDataToBuffer(previewImgFileData);
-    } else if (imgUrl && imgUrl.length > 0) {
-      imgBuffer = await this.previewImgService.imgUrlToImgBuffer(imgUrl);
-    } else if (url && url.length > 0) {
-      const previewImgUrl =
-        await this.previewImgService.getPreviewImageUrlForUrl(url);
-      if (!previewImgUrl || previewImgUrl.length === 0) {
-        throw new BadRequestException(
-          `No preview image found for given recipe url: ${url}`,
-        );
-      }
-      imgBuffer = await this.previewImgService.imgUrlToImgBuffer(previewImgUrl);
-    } else {
-      throw new BadRequestException(
-        'One of `previewImageFileData`, `url` or `imgUrl` must be specified',
-      );
-    }
-
-    return imgBuffer;
+  private batchUpdateRecipe(
+    writeBatch: WriteBatch,
+    recipeId: string,
+    recipeData: RecipeData & { blurHash: string; previewImgFileName: string },
+  ): void {
+    const {
+      title,
+      url,
+      imgUrl,
+      previewImgFileName,
+      ingredients,
+      instructions,
+      tips,
+      categories,
+      blurHash,
+    } = recipeData;
+    writeBatch.set(this.firebase.collection('lb-recipes').doc(recipeId), {
+      title,
+      url,
+      imgUrl,
+      previewImgFileName,
+      ingredients,
+      instructions,
+      tips,
+      blurHash,
+      categories: categories?.map((category) => category.trim().toLowerCase()),
+    });
+    const indexMapField = `titles.${recipeId}`;
+    writeBatch.update(
+      this.firebase.collection('lb-recipes-metadata').doc('title-index'),
+      {
+        [indexMapField]: {
+          title,
+          recipeId,
+        },
+      },
+    );
   }
 }

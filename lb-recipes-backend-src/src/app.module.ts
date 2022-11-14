@@ -4,7 +4,6 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { config } from './config/configuration';
 import { RecipesModule } from './recipes/recipes.module';
-import { PreviewImageService } from './preview-image/preview-image.service';
 import { PreviewImageModule } from './preview-image/preview-image.module';
 import { AuthModule } from './auth/auth.module';
 import { JsonBodyParserMiddleware } from './middleware/json-body-parser.middleware';
@@ -22,7 +21,7 @@ import { LoggerMiddleware } from './middleware/logger.middleware';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PreviewImageService],
+  providers: [AppService],
 })
 export class AppModule {
   configure(middlewareConsumer: MiddlewareConsumer): void {
