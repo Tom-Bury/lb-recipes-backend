@@ -3,17 +3,13 @@ import { WriteBatch } from 'firebase-admin/firestore';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { nonNullable } from 'src/validation/typeValidation.utils';
 import { Recipe } from '../interfaces/recipe-data.dto';
+import { CategoryData } from './interfaces/category-count-response.dto';
 
 @Injectable()
 export class CategoriesService {
   constructor(private readonly firebase: FirebaseService) {}
 
-  async getAllNonEmptyCategories(): Promise<
-    {
-      categoryId: string;
-      nbEntries: number;
-    }[]
-  > {
+  async getAllNonEmptyCategories(): Promise<CategoryData[]> {
     const allCategories = (
       await this.firebase
         .collection('lb-recipes-categories')
@@ -44,11 +40,9 @@ export class CategoriesService {
     );
 
     const intersectingIds = [
-      ...categoryRecipeIdsLists.reduce(
-        (prev, curr) =>
-          new Set([...prev].filter((element) => curr.has(element))),
-        new Set(),
-      ),
+      ...categoryRecipeIdsLists.reduce((prev, curr) => {
+        return new Set([...prev].filter((category) => curr.has(category)));
+      }),
     ];
 
     if (intersectingIds.length === 0) return [];
