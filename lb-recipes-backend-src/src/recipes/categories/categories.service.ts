@@ -119,9 +119,13 @@ export class CategoriesService {
           recipeId,
         },
       );
-      writeBatch.set(categoriesCol.doc(category), {
-        nbEntries: FirebaseService.INCREMENT,
-      });
+      writeBatch.set(
+        categoriesCol.doc(category),
+        {
+          nbEntries: FirebaseService.INCREMENT,
+        },
+        { merge: true },
+      );
     });
   }
 }
