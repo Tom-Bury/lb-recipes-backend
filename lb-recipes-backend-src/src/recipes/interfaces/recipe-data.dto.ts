@@ -1,5 +1,4 @@
 import {
-  ArrayNotEmpty,
   IsDataURI,
   IsNotEmpty,
   IsOptional,
@@ -21,7 +20,6 @@ export class RecipeData {
   imgUrl?: string;
 
   @IsOptional()
-  @ArrayNotEmpty()
   @IsString({
     each: true,
   })
@@ -40,7 +38,6 @@ export class RecipeData {
   previewImgFileData?: string;
 
   @IsOptional()
-  @ArrayNotEmpty()
   @IsString({
     each: true,
   })
