@@ -12,6 +12,7 @@ import {
 import { Configs } from 'src/config/interfaces/config.interface';
 import { Storage } from '@google-cloud/storage';
 import { applicationDefault, Credential } from 'firebase-admin/app';
+import { getErrorMessage } from 'src/utils/error.utils';
 
 const COLLECTIONS = [
   'lb-recipes',
@@ -45,18 +46,24 @@ export class FirebaseService {
       );
     }
     try {
-      admin.initializeApp({
-        projectId: this.configService.get('googleCloudProjectId'),
-        credential: this.getFirestoreCredentials(),
-      });
+      let shouldSetFirestoreSettings = false;
+      if (admin.apps.length === 0) {
+        shouldSetFirestoreSettings = true;
+        admin.initializeApp({
+          projectId: this.configService.get('googleCloudProjectId'),
+          credential: this.getFirestoreCredentials(),
+        });
+      }
       this.db = getFirestore();
       this.storage = new Storage({
         projectId: this.configService.get('googleCloudProjectId'),
         ...this.getCloudStorageCredentials(),
       });
-      this.db.settings({ ignoreUndefinedProperties: true });
+      if (shouldSetFirestoreSettings) {
+        this.db.settings({ ignoreUndefinedProperties: true });
+      }
     } catch (error) {
-      console.error(FirebaseService.TAG, error);
+      console.error(FirebaseService.TAG, getErrorMessage(error));
       this.storage = new Storage({
         projectId: this.configService.get('googleCloudProjectId'),
         ...this.getCloudStorageCredentials(),
