@@ -31,6 +31,13 @@ resource "google_cloud_run_service" "recipes_service" {
       containers {
         image = var.container_img
 
+        resources {
+          limits = {
+            cpu = "1000m"
+            memory = "1024Mi"
+          }
+        }
+
         env {
           name = "TF_VAR_GOOGLE_CLOUD_PROJECT_ID"
           value = var.GOOGLE_CLOUD_PROJECT_ID

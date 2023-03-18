@@ -8,6 +8,7 @@ import { FirebaseService } from 'src/firebase/firebase.service';
 
 @Injectable()
 export class PreviewImageService {
+  private static TAG = 'PreviewImageService';
   constructor(private readonly firebase: FirebaseService) {}
 
   async getPreviewImageUrlForUrl(url: string): Promise<string | undefined> {
@@ -59,6 +60,13 @@ export class PreviewImageService {
     recipeData: RecipeData,
     recipeId: string,
   ): Promise<{ previewImgFileName: string; blurHash: string }> {
+    console.debug(
+      PreviewImageService.TAG,
+      'uploadRecipeThumbToStorageBucket START',
+      {
+        recipeId,
+      },
+    );
     const imgBuffer = await this.getImgBufferForRecipeData(recipeData);
     const [previewImgBuffer, blurHash] = await Promise.all([
       await this.imgBufferToPreviewImgBuffer(imgBuffer),
@@ -71,6 +79,14 @@ export class PreviewImageService {
       previewImgBuffer,
       previewImgFileName,
       'lb_recipes_previews_liesbury-recipes-322314',
+    );
+
+    console.debug(
+      PreviewImageService.TAG,
+      'uploadRecipeThumbToStorageBucket SUCCESS',
+      {
+        recipeId,
+      },
     );
     return {
       previewImgFileName,
