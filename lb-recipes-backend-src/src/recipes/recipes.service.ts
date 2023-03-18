@@ -9,6 +9,8 @@ import { RecipeIndexEntry } from './interfaces/recipe.interface';
 
 @Injectable()
 export class RecipesService {
+  private static TAG = 'RecipesService';
+
   constructor(
     private readonly firebase: FirebaseService,
     private readonly previewImgService: PreviewImageService,
@@ -117,6 +119,11 @@ export class RecipesService {
     });
 
     await writeBatch.commit();
+
+    console.log(RecipesService.TAG, 'Successfully updated recipe', {
+      id: recipeId,
+      title: recipeData.title,
+    });
 
     return {
       id: recipeId,

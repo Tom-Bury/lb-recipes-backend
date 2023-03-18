@@ -19,6 +19,8 @@ import { RecipesService } from './recipes.service';
 
 @Controller('recipes')
 export class RecipesController {
+  private static TAG = 'RecipesController';
+
   constructor(private readonly recipesService: RecipesService) {}
 
   @Get('recipe/:id')
@@ -28,7 +30,7 @@ export class RecipesController {
       const data = await this.recipesService.getRecipe(id);
       return data;
     } catch (error) {
-      console.error(error);
+      console.error(RecipesController.TAG, error);
       throw new BadRequestException(
         `Recipe with id '${id}' not found. Reason: ${getErrorMessage(error)}`,
       );
@@ -40,7 +42,7 @@ export class RecipesController {
   async deleteRecipe(@Param() params: RecipeId): Promise<string> {
     const { id } = params;
     if (await this.recipesService.recipeExists(id)) {
-      console.info(`Delete recipe ${id}`);
+      console.info(RecipesController.TAG, `Delete recipe ${id}`);
       await this.recipesService.deleteRecipe(id);
       return `Successfully deleted recipe data for id '${id}'`;
     } else {
@@ -56,7 +58,10 @@ export class RecipesController {
   ): Promise<{ id: string }> {
     const { id } = params;
     if (await this.recipesService.recipeExists(id)) {
-      console.info(`Update recipe ${id} with ${JSON.stringify(recipeData)}`);
+      console.info(
+        RecipesController.TAG,
+        `Update recipe ${id} with ${JSON.stringify(recipeData)}`,
+      );
       return this.recipesService.updateRecipe(recipeData, id);
     } else {
       throw new BadRequestException(`No recipe with id '${id}' exists`);
@@ -66,13 +71,16 @@ export class RecipesController {
   @UseGuards(JwtAuthGuard)
   @Post('new')
   async addRecipe(@Body() recipeData: RecipeData): Promise<{ id: string }> {
-    console.info(`Add new recipe ${JSON.stringify(recipeData)}`);
+    console.info(
+      RecipesController.TAG,
+      `Add new recipe ${JSON.stringify(recipeData)}`,
+    );
     return this.recipesService.addNewRecipe(recipeData);
   }
 
   @Get('search')
   async searchRecipes(@Query() { query }: StringQuery): Promise<Recipe[]> {
-    console.info(`Search recipe for: ${query}`);
+    console.info(RecipesController.TAG, `Search recipe for: ${query}`);
     return this.recipesService.searchRecipes(query);
   }
 }
