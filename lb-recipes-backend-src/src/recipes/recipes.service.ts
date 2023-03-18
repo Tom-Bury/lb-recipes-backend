@@ -89,11 +89,12 @@ export class RecipesService {
     recipeData: RecipeData,
     recipeId: string,
   ): Promise<{ id: string }> {
-    const { previewImgFileName, blurHash } =
     console.debug(RecipesService.TAG, 'updateRecipe START', {
       id: recipeId,
       title: recipeData.title,
     });
+
+    const { previewImgFileName, blurHash } =
       await this.previewImgService.uploadRecipeThumbToStorageBucket(
         recipeData,
         recipeId,
