@@ -27,15 +27,22 @@ type TBucketId = typeof BUCKETS[number];
 export class FirebaseService {
   private db: Firestore;
   private storage: Storage;
+  private static TAG = 'FirebaseService';
 
   public static INCREMENT = FieldValue.increment(1);
   public static DECREMENT = FieldValue.increment(-1);
 
   constructor(private readonly configService: ConfigService<Configs, true>) {
     if (this.configService.get('usePassedServiceAccountCredentials')) {
-      console.info('Using .env passed service account credentials');
+      console.info(
+        FirebaseService.TAG,
+        'Using .env passed service account credentials',
+      );
     } else {
-      console.info('Using application default credentials');
+      console.info(
+        FirebaseService.TAG,
+        'Using application default credentials',
+      );
     }
     try {
       admin.initializeApp({
@@ -49,7 +56,7 @@ export class FirebaseService {
       });
       this.db.settings({ ignoreUndefinedProperties: true });
     } catch (error) {
-      console.error(error);
+      console.error(FirebaseService.TAG, error);
       this.storage = new Storage({
         projectId: this.configService.get('googleCloudProjectId'),
         ...this.getCloudStorageCredentials(),
