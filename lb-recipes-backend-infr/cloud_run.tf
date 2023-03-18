@@ -25,7 +25,7 @@ resource "google_cloud_run_service" "recipes_service" {
 
   template {
     spec {
-      timeout_seconds = 15
+      timeout_seconds = 30
       service_account_name = google_service_account.sa_recipes_service.email
 
       containers {
