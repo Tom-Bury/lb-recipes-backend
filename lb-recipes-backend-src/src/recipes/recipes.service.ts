@@ -90,6 +90,10 @@ export class RecipesService {
     recipeId: string,
   ): Promise<{ id: string }> {
     const { previewImgFileName, blurHash } =
+    console.debug(RecipesService.TAG, 'updateRecipe START', {
+      id: recipeId,
+      title: recipeData.title,
+    });
       await this.previewImgService.uploadRecipeThumbToStorageBucket(
         recipeData,
         recipeId,
@@ -120,7 +124,7 @@ export class RecipesService {
 
     await writeBatch.commit();
 
-    console.log(RecipesService.TAG, 'Successfully updated recipe', {
+    console.debug(RecipesService.TAG, 'updateRecipe SUCCESS', {
       id: recipeId,
       title: recipeData.title,
     });

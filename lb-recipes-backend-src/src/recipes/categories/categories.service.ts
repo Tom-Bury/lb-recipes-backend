@@ -7,6 +7,7 @@ import { CategoryData } from './interfaces/category-count-response.dto';
 
 @Injectable()
 export class CategoriesService {
+  private static TAG = 'CategoriesService';
   constructor(private readonly firebase: FirebaseService) {}
 
   async getAllNonEmptyCategories(): Promise<CategoryData[]> {
@@ -60,9 +61,19 @@ export class CategoriesService {
   }
 
   async removeRecipeFromAllCategories(recipeId: string): Promise<void> {
+    console.debug(
+      CategoriesService.TAG,
+      'removeRecipeFromAllCategories START',
+      { recipeId },
+    );
     const batch = this.firebase.batch();
     await this.batchRemoveRecipeFromAllCategories(batch, recipeId);
     await batch.commit();
+    console.debug(
+      CategoriesService.TAG,
+      'removeRecipeFromAllCategories SUCCESS',
+      { recipeId },
+    );
   }
 
   async batchRemoveRecipeFromAllCategories(
