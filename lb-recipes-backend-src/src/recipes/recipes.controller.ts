@@ -83,4 +83,11 @@ export class RecipesController {
     console.info(RecipesController.TAG, `Search recipe for: ${query}`);
     return this.recipesService.searchRecipes(query);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('preview')
+  async getPreviewRecipes(): Promise<Recipe[]> {
+    console.info(RecipesController.TAG, `Get preview recipes`);
+    return this.recipesService.getPreviewRecipes();
+  }
 }

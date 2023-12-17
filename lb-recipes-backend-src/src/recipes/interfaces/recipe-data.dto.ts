@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDataURI,
   IsNotEmpty,
   IsOptional,
@@ -42,6 +43,10 @@ export class RecipeData {
     each: true,
   })
   categories?: string[];
+
+  @IsOptional()
+  @IsBoolean()
+  isPreview?: boolean;
 }
 
 export class Recipe extends RecipeData {
