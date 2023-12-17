@@ -57,7 +57,7 @@ export class FirebaseService {
       this.db = getFirestore();
       this.storage = new Storage({
         projectId: this.configService.get('googleCloudProjectId'),
-        ...this.getCloudStorageCredentials(),
+        credentials: this.getCloudStorageCredentials(),
       });
       if (shouldSetFirestoreSettings) {
         this.db.settings({ ignoreUndefinedProperties: true });
@@ -66,7 +66,7 @@ export class FirebaseService {
       console.error(FirebaseService.TAG, getErrorMessage(error));
       this.storage = new Storage({
         projectId: this.configService.get('googleCloudProjectId'),
-        ...this.getCloudStorageCredentials(),
+        credentials: this.getCloudStorageCredentials(),
       });
       this.db = getFirestore();
     }
