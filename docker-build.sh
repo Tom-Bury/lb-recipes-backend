@@ -14,9 +14,17 @@ increment_version() {
 
   for index in ${!array[@]}; do
     if [ $index -eq $2 ]; then
-      local value=array[$index]
+      local value=${array[$index]}
       value=$((value+1))
       array[$index]=$value
+
+      # Reset minor and patch numbers to zero if a non-patch number is increased
+      if [ $index -lt 2 ]; then
+        for ((i=index+1; i<${#array[@]}; i++)); do
+          array[$i]=0
+        done
+      fi
+
       break
     fi
   done
