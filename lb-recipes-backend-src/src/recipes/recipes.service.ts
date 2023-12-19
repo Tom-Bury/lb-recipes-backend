@@ -200,6 +200,7 @@ export class RecipesService {
         },
       },
     );
+  }
 
   async getPreviewRecipes(): Promise<Recipe[]> {
     const previewRecipesSnapshot = await this.firebase

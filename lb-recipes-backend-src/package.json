@@ -4,9 +4,9 @@
   "description": "",
   "author": "",
   "private": true,
-  "license": "UNLICENSED", 
-  "engines" : { 
-    "node" : ">=18.0.0"
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18.0.0"
   },
   "scripts": {
     "prebuild": "rimraf dist",
@@ -43,7 +43,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
-    "sharp": "^0.31.1"
+    "sharp": "^0.33.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
