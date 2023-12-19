@@ -71,13 +71,14 @@ printf "\n\n🆕 New version: $NEW_VERSION\n"
 
 perl -pi -e "s/$CURR_VERSION/$NEW_VERSION/" $VERSION_FILE_PATH
 perl -pi -e "s/$CURR_VERSION/$NEW_VERSION/" $TF_VERSION_FILE_PATH
-git commit -am "ci: version bump v$NEW_VERSION"
-git tag "v$NEW_VERSION"
 
 printf "\n\n🐳 Building Docker image\n\n"
 
 cd lb-recipes-backend-src
 docker build -t "lb-recipes-backend:v$NEW_VERSION" .
+
+git commit -am "ci: version bump v$NEW_VERSION"
+git tag "v$NEW_VERSION"
 
 printf "\n\n🐳 Done 🎉\n\n"
 docker image ls
