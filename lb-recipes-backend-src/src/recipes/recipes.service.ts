@@ -178,6 +178,7 @@ export class RecipesService {
       tips,
       categories,
       blurHash,
+      isPreview,
     } = recipeData;
     writeBatch.set(this.firebase.collection('lb-recipes').doc(recipeId), {
       title,
@@ -188,6 +189,7 @@ export class RecipesService {
       instructions,
       tips,
       blurHash,
+      isPreview: Boolean(isPreview),
       categories: categories?.map((category) => category.trim().toLowerCase()),
     });
     const indexMapField = `titles.${recipeId}`;
