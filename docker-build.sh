@@ -14,9 +14,17 @@ increment_version() {
 
   for index in ${!array[@]}; do
     if [ $index -eq $2 ]; then
-      local value=array[$index]
+      local value=${array[$index]}
       value=$((value+1))
       array[$index]=$value
+
+      # Reset minor and patch numbers to zero if a non-patch number is increased
+      if [ $index -lt 2 ]; then
+        for ((i=index+1; i<${#array[@]}; i++)); do
+          array[$i]=0
+        done
+      fi
+
       break
     fi
   done
@@ -63,13 +71,14 @@ printf "\n\n🆕 New version: $NEW_VERSION\n"
 
 perl -pi -e "s/$CURR_VERSION/$NEW_VERSION/" $VERSION_FILE_PATH
 perl -pi -e "s/$CURR_VERSION/$NEW_VERSION/" $TF_VERSION_FILE_PATH
-git commit -am "ci: version bump v$NEW_VERSION"
-git tag "v$NEW_VERSION"
 
 printf "\n\n🐳 Building Docker image\n\n"
 
 cd lb-recipes-backend-src
 docker build -t "lb-recipes-backend:v$NEW_VERSION" .
+
+git commit -am "ci: version bump v$NEW_VERSION"
+git tag "v$NEW_VERSION"
 
 printf "\n\n🐳 Done 🎉\n\n"
 docker image ls

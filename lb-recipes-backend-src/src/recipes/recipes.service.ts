@@ -67,10 +67,15 @@ export class RecipesService {
       ),
     );
 
-    return results.map((doc) => ({
-      ...doc.data(),
-      id: doc.id,
-    })) as Recipe[];
+    return results
+      .map(
+        (doc) =>
+          ({
+            ...doc.data(),
+            id: doc.id,
+          } as Recipe),
+      )
+      .filter((recipe) => !recipe?.isPreview);
   }
 
   async addNewRecipe(recipeData: RecipeData): Promise<{ id: string }> {
@@ -173,6 +178,7 @@ export class RecipesService {
       tips,
       categories,
       blurHash,
+      isPreview,
     } = recipeData;
     writeBatch.set(this.firebase.collection('lb-recipes').doc(recipeId), {
       title,
@@ -183,6 +189,7 @@ export class RecipesService {
       instructions,
       tips,
       blurHash,
+      isPreview: Boolean(isPreview),
       categories: categories?.map((category) => category.trim().toLowerCase()),
     });
     const indexMapField = `titles.${recipeId}`;
@@ -195,5 +202,17 @@ export class RecipesService {
         },
       },
     );
+  }
+
+  async getPreviewRecipes(): Promise<Recipe[]> {
+    const previewRecipesSnapshot = await this.firebase
+      .collection('lb-recipes')
+      .where('isPreview', '==', true)
+      .get();
+
+    return previewRecipesSnapshot.docs.map((doc) => ({
+      ...doc.data(),
+      id: doc.id,
+    })) as Recipe[];
   }
 }
