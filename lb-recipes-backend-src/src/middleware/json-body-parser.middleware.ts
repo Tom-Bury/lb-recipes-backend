@@ -8,5 +8,5 @@ export class JsonBodyParserMiddleware implements NestMiddleware {
     limit: '5mb',
   };
 
-  use = bodyParser.json(this.options);
+  use: NestMiddleware['use'] = bodyParser.json(this.options);
 }
