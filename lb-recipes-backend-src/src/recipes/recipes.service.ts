@@ -6,6 +6,7 @@ import { PreviewImageService } from 'src/preview-image/preview-image.service';
 import { CategoriesService } from './categories/categories.service';
 import { Recipe, RecipeData } from './interfaces/recipe-data.dto';
 import { RecipeIndexEntry } from './interfaces/recipe.interface';
+import { byUpdateTimeDescending } from 'src/firebase/firstore.utils';
 
 @Injectable()
 export class RecipesService {
@@ -16,6 +17,26 @@ export class RecipesService {
     private readonly previewImgService: PreviewImageService,
     private readonly categoriesService: CategoriesService,
   ) {}
+
+  async getAllRecipes(): Promise<Recipe[]> {
+    const recipesSnapshot = await this.firebase.collection('lb-recipes').get();
+    return recipesSnapshot.docs
+      .sort(byUpdateTimeDescending)
+      .map(
+        (doc) =>
+          ({
+            ...doc.data(),
+            id: doc.id,
+          } as Recipe),
+      )
+      .filter((recipe) => !recipe?.isPreview);
+  }
+
+  async getLastNRecipes(limit: number): Promise<Recipe[]> {
+    // TODO: create indices for preview and non-preview recipes such that we can query firestore using the limit option
+    const allRecipes = await this.getAllRecipes();
+    return allRecipes.slice(0, limit);
+  }
 
   async getRecipe(recipeId: string): Promise<Recipe> {
     const recipeSnapshot = await this.firebase

@@ -23,6 +23,22 @@ export class RecipesController {
 
   constructor(private readonly recipesService: RecipesService) {}
 
+  @Get('all/:limit?')
+  async getAllRecipes(@Param('limit') limit?: string): Promise<Recipe[]> {
+    let parsedLimit: number | undefined;
+
+    if (limit) {
+      parsedLimit = parseInt(limit, 10);
+      if (isNaN(parsedLimit) || parsedLimit <= 0) {
+        throw new BadRequestException(`Invalid limit value: '${limit}'`);
+      }
+    }
+
+    return parsedLimit
+      ? this.recipesService.getLastNRecipes(parsedLimit)
+      : this.recipesService.getAllRecipes();
+  }
+
   @Get('recipe/:id')
   async getRecipe(@Param() params: RecipeId): Promise<Recipe> {
     const { id } = params;
