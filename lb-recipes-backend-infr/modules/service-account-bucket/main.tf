@@ -4,13 +4,18 @@ resource "google_storage_bucket" "bucket" {
   force_destroy = false
   uniform_bucket_level_access = true
 }
+
 data "google_iam_policy" "bucket_policy_data" {
-  binding {
-    role = "roles/storage.objectViewer"
-    members = [
-      "allUsers",
-    ]
+  dynamic "binding" {
+    for_each = var.public ? [1] : []
+    content {
+      role = "roles/storage.objectViewer"
+      members = [
+        "allUsers",
+      ]
+    }
   }
+
 
   binding {
     role = var.service_account_role
