@@ -6,8 +6,8 @@ resource "google_project_service" "run_api" {
 
 # Service account for the cloud run instance
 resource "google_service_account" "lb_recipes_backend_cloud_run_sa" {
-  account_id   = "lb-recipes-backend-cloud-run-sa"
-  display_name = "lb-recipes-backend-cloud-run-sa"
+  account_id   = "backend-cloud-run-sa"
+  display_name = "backend-cloud-run-sa"
 }
 
 # Ensure service account can access FireStore
