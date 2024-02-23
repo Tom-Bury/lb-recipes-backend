@@ -3,7 +3,7 @@
 trap "git stash pop -q" EXIT
 
 VERSION_FILE_PATH="lb-recipes-backend-src/src/config/version.ts"
-TF_VERSION_FILE_PATH="lb-recipes-backend-infr/version.tf"
+TF_VERSION_FILE_PATH="lb-recipes-backend-infr/container_image.tf"
 
 ### Increments the part of the string
 ## $1: version itself
