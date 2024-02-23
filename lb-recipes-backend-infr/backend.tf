@@ -1,5 +1,7 @@
-# Define which tf BE to use to store tf state files
-
+# Define which terraform BE to use to store its state files
 terraform {
-  backend "local" {}
+  backend "gcs" {
+    bucket = var.TERRAFORM_STATE_BUCKET_NAME
+    prefix = "terraform/state"
+  }
 }
