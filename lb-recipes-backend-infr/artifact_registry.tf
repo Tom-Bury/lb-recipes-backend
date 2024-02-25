@@ -2,6 +2,8 @@
 resource "google_project_service" "artifact_registry_api" {
   service            = "artifactregistry.googleapis.com"
   disable_on_destroy = true
+
+  depends_on = [ google_project_service.cloud_resource_manager_api ]
 }
 
 # Artifact registry for docker images

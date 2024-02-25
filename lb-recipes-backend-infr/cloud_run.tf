@@ -2,12 +2,16 @@
 resource "google_project_service" "run_api" {
   service            = "run.googleapis.com"
   disable_on_destroy = true
+
+  depends_on = [ google_project_service.service_usage_api ]
 }
 
 # Service account for the cloud run instance
 resource "google_service_account" "lb_recipes_backend_cloud_run_sa" {
   account_id   = "backend-cloud-run-sa"
   display_name = "backend-cloud-run-sa"
+
+  depends_on = [google_project_service.iam_api]
 }
 
 # Ensure service account can access FireStore
