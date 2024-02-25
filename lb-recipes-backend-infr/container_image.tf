@@ -1,3 +1,3 @@
-variable "container_img" {
-  default = "europe-west1-docker.pkg.dev/liesbury-recipes-322314/lb-recipes-artifact-registry/lb-recipes-backend:v1.0.0"
+locals {
+  container_img = "europe-west1-docker.pkg.dev/${var.GOOGLE_CLOUD_PROJECT_ID}/lb-recipes-docker-container-repo/lb-recipes-backend:v1.0.0"
 }

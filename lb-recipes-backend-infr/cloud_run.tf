@@ -32,7 +32,7 @@ resource "google_cloud_run_service" "lb_recipes_backend_cloud_run_service" {
       service_account_name = google_service_account.lb_recipes_backend_cloud_run_sa.email
 
       containers {
-        image = var.container_img
+        image = local.container_img
 
         resources {
           limits = {
