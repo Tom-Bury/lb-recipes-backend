@@ -23,10 +23,3 @@ resource "google_firestore_backup_schedule" "lb_recipes_database_daily_backup" {
 
   daily_recurrence {}
 }
-
-resource "google_firestore_document" "title_index_doc" {
-  database    = google_firestore_database.lb_recipes_database.name
-  collection  = "lb-recipes-metadata"
-  document_id = "title-index"
-  fields      = ""
-}
