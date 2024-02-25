@@ -14,5 +14,7 @@ fi
 
 printf "🚢 Pushing version v$REQUESTED_VERSION\n\n"
 
+gcloud auth configure-docker europe-west1-docker.pkg.dev --project liesbury-recipes-gcp
+
 docker tag "lb-recipes-backend:v$REQUESTED_VERSION" "europe-west1-docker.pkg.dev/liesbury-recipes-322314/lb-recipes-artifact-registry/lb-recipes-backend:v$REQUESTED_VERSION"
 docker push "europe-west1-docker.pkg.dev/liesbury-recipes-322314/lb-recipes-artifact-registry/lb-recipes-backend:v$REQUESTED_VERSION"
