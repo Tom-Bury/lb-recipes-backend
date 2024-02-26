@@ -35,10 +35,10 @@ resource "google_cloud_run_v2_service" "lb_recipes_backend_cloud_run_service" {
 
       resources {
         limits = {
-          cpu      = "1"
-          memory   = "1Gi"
-          cpu_idle = true
+          cpu    = "1"
+          memory = "1Gi"
         }
+        cpu_idle = true
       }
 
       env {
