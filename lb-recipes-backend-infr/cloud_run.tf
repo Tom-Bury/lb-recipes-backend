@@ -70,7 +70,7 @@ resource "google_cloud_run_v2_service" "lb_recipes_backend_cloud_run_service" {
 
 # Make recipes_service publicly accessible
 resource "google_cloud_run_service_iam_member" "lb_recipes_backend_public" {
-  service = google_cloud_run_service.lb_recipes_backend_cloud_run_service.name
+  service = google_cloud_run_v2_service.lb_recipes_backend_cloud_run_service.name
   role    = "roles/run.invoker"
   member  = "allUsers"
 }
