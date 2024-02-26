@@ -28,12 +28,12 @@ resource "google_project_service" "cloud_resource_manager_api" {
   service            = "cloudresourcemanager.googleapis.com"
   disable_on_destroy = true
 
-  depends_on = [ google_project_service.service_usage_api ]
+  depends_on = [google_project_service.service_usage_api]
 }
 
 resource "google_project_service" "iam_api" {
   service            = "iam.googleapis.com"
   disable_on_destroy = true
 
-  depends_on = [ google_project_service.cloud_resource_manager_api ]
+  depends_on = [google_project_service.cloud_resource_manager_api]
 }
