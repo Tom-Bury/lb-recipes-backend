@@ -3,8 +3,6 @@ run-name: ${{ github.actor }} - ${{ github.event_name }}
 on:
   push:
     branches: ["main", "feat/docker-build"]
-  pull_request:
-    branches: ["main"]
 jobs:
   build-push-artifact:
     runs-on: ubuntu-latest
