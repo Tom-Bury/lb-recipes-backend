@@ -47,9 +47,6 @@ NEW_VERSION=$(increment_version $CURR_VERSION 2)
 perl -pi -e "s/$CURR_VERSION/$NEW_VERSION/" $VERSION_FILE_PATH
 perl -pi -e "s/$CURR_VERSION/$NEW_VERSION/" $TF_VERSION_FILE_PATH
 
-
-git config --global user.name 'github-actions[bot]'
-git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 git commit -am "ci: version bump v$NEW_VERSION"
 git tag "v$NEW_VERSION"
 git push --tags

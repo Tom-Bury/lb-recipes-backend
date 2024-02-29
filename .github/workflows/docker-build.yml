@@ -2,17 +2,23 @@ name: Build and Push to Artifact Registry
 run-name: ${{ github.actor }} - ${{ github.event_name }}
 on:
   push:
-    branches: ["main", "feat/docker-build"]
+    branches: ["main"]
   pull_request:
     branches: ["main"]
+  workflow_dispatch:
 jobs:
   build-push-artifact:
     runs-on: ubuntu-latest
     steps:
-      - name: "Checkout"
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - name: "Version bump"
-        run: ./automatic-version-bump.sh        
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          ./automatic-version-bump.sh
+
       
 
       # - id: "auth"
