@@ -25,7 +25,8 @@ jobs:
       - name: "Version bump"
         run: |
           ./automatic-version-bump.sh
-          CURR_VERSION=$(cat $VERSION_FILE_PATH | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')
+          VERSION_FILE_PATH="lb-recipes-backend-src/src/config/version.ts"
+          NEW_VERSION=$(cat $VERSION_FILE_PATH | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')
           git commit -am "ci: version bump v$NEW_VERSION [skip ci]"
           git pull --rebase
           git tag "v$NEW_VERSION"
