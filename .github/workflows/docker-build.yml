@@ -1,33 +1,38 @@
-name: build-docker-image
+name: Build and Push to Artifact Registry
 run-name: ${{ github.actor }} - ${{ github.event_name }}
-on: [push]
-jobs:
-  build-docker:
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+job:
+  build-push-artifact:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18.19.0'
-      - name: Setup and install dependencies
-        working-directory: ./lb-recipes-backend-src
-        run: |
-          corepack enable pnpm
-          pnpm install --frozen-lockfile --prod
-      - name: Check versions
-        run: |
-          VERSION_FILE_PATH="lb-recipes-backend-src/src/config/version.ts"
-          TF_VERSION_FILE_PATH="lb-recipes-backend-infr/container_image.tf"
-          CURR_VERSION=$(cat $VERSION_FILE_PATH | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')
-          CURR_TF_VERSION=$(cat $TF_VERSION_FILE_PATH | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')
-          if [ "$CURR_VERSION" != "$CURR_TF_VERSION" ]; then
-            printf "💥 Terraform & JS versions are not equal. Exiting"
-            exit 1
-          fi
-      - name: Build and push Docker image
-        run: |
-          VERSION_FILE_PATH="lb-recipes-backend-src/src/config/version.ts"
-          CURR_VERSION=$(cat $VERSION_FILE_PATH | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')
-          cd lb-recipes-backend-src
-          docker build -t "lb-recipes-backend:v$CURR_VERSION" .
-          echo done
+      - name: "Checkout"
+        uses: actions/checkout@v4
+      - name: "Version bump"
+        run: ./automatic-version-bump.sh        
+      
+
+      # - id: "auth"
+      #     uses: "google-github-actions/auth@v1"
+      #     with:
+      #       credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
+
+      # - name: "Set up Cloud SDK"
+      #   uses: "google-github-actions/setup-gcloud@v1"
+
+      # - name: "Use gcloud CLI"
+      #   run: "gcloud info"
+
+      # - name: "Docker auth"
+      #   run: |-
+      #     gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      # - name: Build image
+      #   run: docker build . --file DOCKERFILE_LOCATION --tag ${{ env.GAR_LOCATION }}
+      #   working-directory: WORKING_DIRECTORY
+
+      # - name: Push image
+      #   run: docker push ${{ env.GAR_LOCATION }}
