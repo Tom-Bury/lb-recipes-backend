@@ -16,15 +16,16 @@ jobs:
           echo ${{ github.ref }}
           echo ${{ github.ref_name }}
 
-      - name: Checkout branch
-        run: git checkout ${{ github.ref_name }}
+      - name: "Set up Git Config"
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
 
       - name: "Version bump"
         run: |
-          git branch --show-current
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           ./automatic-version-bump.sh
+
 
       
 
