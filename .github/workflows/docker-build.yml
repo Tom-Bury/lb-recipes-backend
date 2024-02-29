@@ -2,10 +2,9 @@ name: Build and Push to Artifact Registry
 run-name: ${{ github.actor }} - ${{ github.event_name }}
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "feat/docker-build"]
   pull_request:
     branches: ["main"]
-  workflow_dispatch:
 jobs:
   build-push-artifact:
     runs-on: ubuntu-latest
