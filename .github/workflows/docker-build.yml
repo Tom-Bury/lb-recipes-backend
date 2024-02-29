@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
+
+      - name: Checkout branch
+        run: git checkout ${{ github.head_ref }}
+
       - name: "Version bump"
         run: |
           git config --global user.name 'github-actions[bot]'
