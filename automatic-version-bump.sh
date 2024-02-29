@@ -49,6 +49,6 @@ perl -pi -e "s/$CURR_VERSION/$NEW_VERSION/" $TF_VERSION_FILE_PATH
 
 git commit -am "ci: version bump v$NEW_VERSION [skip ci]"
 git tag "v$NEW_VERSION"
-git push --tags
+git push --tags origin
 
 
