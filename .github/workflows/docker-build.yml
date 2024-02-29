@@ -14,10 +14,12 @@ jobs:
           fetch-depth: 0
 
       - name: Brach name
-        run: echo ${{ github.ref }}
+        run: |
+          echo ${{ github.ref }}
+          echo ${{ github.ref_name }}
 
       - name: Checkout branch
-        run: git checkout ${{ github.ref }}
+        run: git checkout ${{ github.ref_name }}
 
       - name: "Version bump"
         run: |
