@@ -10,14 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Brach name
-        run: echo ${{ github.head_ref }}
+        run: echo ${{ github.ref }}
 
-      - name: Checkout branch
-        run: git checkout ${{ github.head_ref }}
+      # - name: Checkout branch
+      #   run: git checkout ${{ github.ref }}
 
       - name: "Version bump"
         run: |
