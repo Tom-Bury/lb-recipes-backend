@@ -4,7 +4,7 @@ on:
   push:
     branches: ["main", "feat/docker-build"]
 jobs:
-  build-push-artifact:
+  build-docker-push-artifact-registry:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,29 +19,37 @@ jobs:
 
       - name: "Version bump"
         run: ./automatic-version-bump.sh
-          
 
-
+      - name: Set current version
+        id: version-selector
+        run: |
+          VERSION_FILE_PATH="lb-recipes-backend-src/src/config/version.ts"
+          echo "CURRENT_VERSION=$(cat $VERSION_FILE_PATH | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')" >> "$GITHUB_OUTPUT"
       
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
 
-      # - id: "auth"
-      #     uses: "google-github-actions/auth@v1"
-      #     with:
-      #       credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v2"
 
-      # - name: "Set up Cloud SDK"
-      #   uses: "google-github-actions/setup-gcloud@v1"
+      - name: "Use gcloud CLI"
+        run: "gcloud info"
 
-      # - name: "Use gcloud CLI"
-      #   run: "gcloud info"
+      - name: "Docker auth"
+        run: |-
+          gcloud auth configure-docker ${{ secrets.REGION }}-docker.pkg.dev --quiet --project ${{ secrets.PROJECT_ID }}
 
-      # - name: "Docker auth"
-      #   run: |-
-      #     gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+      - name: Build image
+        working-directory: ./lb-recipes-backend-src
+        env:
+          CURRENT_VERSION: ${{ steps.version-selector.outputs.CURRENT_VERSION }}
+        run: docker build -t "lb-recipes-backend:v$CURRENT_VERSION" .
 
-      # - name: Build image
-      #   run: docker build . --file DOCKERFILE_LOCATION --tag ${{ env.GAR_LOCATION }}
-      #   working-directory: WORKING_DIRECTORY
-
-      # - name: Push image
-      #   run: docker push ${{ env.GAR_LOCATION }}
+      - name: Push image
+        env:
+          CURRENT_VERSION: ${{ steps.version-selector.outputs.CURRENT_VERSION }}
+        run: |
+          docker tag "lb-recipes-backend:v$CURRENT_VERSION" "${{ secrets.europe-west1.REGION }}-docker.pkg.dev/${{ secrets.europe-west1.PROJECT_ID }}/lb-recipes-docker-container-repo/lb-recipes-backend:v$CURRENT_VERSION"
+          docker push "${{ secrets.europe-west1.REGION }}-docker.pkg.dev/${{ secrets.europe-west1.PROJECT_ID }}/lb-recipes-docker-container-repo/lb-recipes-backend:v$CURRENT_VERSION"
