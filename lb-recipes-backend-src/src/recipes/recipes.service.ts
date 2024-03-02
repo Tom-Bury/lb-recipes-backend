@@ -19,17 +19,22 @@ export class RecipesService {
   ) {}
 
   async getAllRecipes(): Promise<Recipe[]> {
-    const recipesSnapshot = await this.firebase.collection('lb-recipes').get();
-    return recipesSnapshot.docs
-      .sort(byUpdateTimeDescending)
-      .map(
-        (doc) =>
-          ({
-            ...doc.data(),
-            id: doc.id,
-          } as Recipe),
-      )
-      .filter((recipe) => !recipe?.isPreview);
+    try {
+      const recipesSnapshot = await this.firebase.collection('lb-recipes').get();
+      return recipesSnapshot.docs
+        .sort(byUpdateTimeDescending)
+        .map(
+          (doc) =>
+            ({
+              ...doc.data(),
+              id: doc.id,
+            } as Recipe),
+        )
+        .filter((recipe) => !recipe?.isPreview);
+    } catch (error) {
+      console.error(RecipesService.TAG, 'getAllRecipes', error);
+      return [];
+    }
   }
 
   async getLastNRecipes(limit: number): Promise<Recipe[]> {
@@ -145,7 +150,7 @@ export class RecipesService {
       previewImgFileName,
       imgUrl: this.firebase.getStorageFileUrl(
         previewImgFileName,
-        'lb_recipes_previews_liesbury-recipes-322314',
+        'lb-recipes-previews-liesbury-recipes-gcp',
       ),
     });
 
@@ -178,7 +183,7 @@ export class RecipesService {
     const previewImgFileDeletionPromise =
       this.firebase.deleteAllFilesWithPrefix(
         recipeId,
-        'lb_recipes_previews_liesbury-recipes-322314',
+        'lb-recipes-previews-liesbury-recipes-gcp',
       );
 
     await Promise.all([deleteBatch.commit(), previewImgFileDeletionPromise]);

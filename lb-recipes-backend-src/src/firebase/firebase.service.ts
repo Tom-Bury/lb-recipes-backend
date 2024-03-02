@@ -19,10 +19,10 @@ const COLLECTIONS = [
   'lb-recipes-metadata',
   'lb-recipes-categories',
 ] as const;
-type TCollectionId = typeof COLLECTIONS[number];
+type TCollectionId = (typeof COLLECTIONS)[number];
 
-const BUCKETS = ['lb_recipes_previews_liesbury-recipes-322314'] as const;
-type TBucketId = typeof BUCKETS[number];
+const BUCKETS = ['lb-recipes-previews-liesbury-recipes-gcp'] as const;
+type TBucketId = (typeof BUCKETS)[number];
 
 @Injectable()
 export class FirebaseService {
@@ -54,7 +54,7 @@ export class FirebaseService {
           credential: this.getFirestoreCredentials(),
         });
       }
-      this.db = getFirestore();
+      this.db = getFirestore('lb-recipes-database');
       this.storage = new Storage({
         projectId: this.configService.get('googleCloudProjectId'),
         credentials: this.getCloudStorageCredentials(),
@@ -68,7 +68,7 @@ export class FirebaseService {
         projectId: this.configService.get('googleCloudProjectId'),
         credentials: this.getCloudStorageCredentials(),
       });
-      this.db = getFirestore();
+      this.db = getFirestore('lb-recipes-database');
     }
   }
 
