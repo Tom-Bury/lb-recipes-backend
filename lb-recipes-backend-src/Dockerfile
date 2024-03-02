@@ -2,7 +2,7 @@
 # BASE
 ###################
 
-FROM node:18.19.0-alpine AS base
+FROM --platform=linux/amd64 node:18.19.0-alpine AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
