@@ -1,0 +1,55 @@
+name: Build and Push to Artifact Registry
+run-name: ${{ github.actor }} - build Docker and push to Artifact Registry from main
+on:
+  push:
+    branches: ["main"]
+jobs:
+  build-docker-push-artifact-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "Set up Git Config"
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+
+      - name: "Version bump"
+        run: ./automatic-version-bump.sh
+
+      - name: Set current version
+        id: version-selector
+        run: |
+          VERSION_FILE_PATH="lb-recipes-backend-src/src/config/version.ts"
+          echo "CURRENT_VERSION=$(cat $VERSION_FILE_PATH | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')" >> "$GITHUB_OUTPUT"
+      
+      - id: "auth"
+        uses: "google-github-actions/auth@v2"
+        with:
+          credentials_json: "${{ secrets.SERVICE_ACCOUNT_KEY }}"
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v2"
+
+      - name: "Use gcloud CLI"
+        run: "gcloud info"
+
+      - name: "Docker auth"
+        run: |-
+          gcloud auth configure-docker ${{ secrets.REGION }}-docker.pkg.dev --quiet --project ${{ secrets.PROJECT_ID }}
+
+      - name: Build image
+        working-directory: ./lb-recipes-backend-src
+        env:
+          CURRENT_VERSION: ${{ steps.version-selector.outputs.CURRENT_VERSION }}
+        run: docker build -t "lb-recipes-backend:v$CURRENT_VERSION" .
+
+      - name: Push image
+        env:
+          CURRENT_VERSION: ${{ steps.version-selector.outputs.CURRENT_VERSION }}
+        run: |
+          docker tag "lb-recipes-backend:v$CURRENT_VERSION" "${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/lb-recipes-docker-container-repo/lb-recipes-backend:v$CURRENT_VERSION"
+          docker push "${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/lb-recipes-docker-container-repo/lb-recipes-backend:v$CURRENT_VERSION"
