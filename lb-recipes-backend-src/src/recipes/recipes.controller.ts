@@ -39,6 +39,11 @@ export class RecipesController {
       : this.recipesService.getAllRecipes();
   }
 
+  @Get('count')
+  async getTotalNbOfRecipes(): Promise<number> {
+    return this.recipesService.getTotalNbOfRecipes();
+  }
+
   @Get('recipe/:id')
   async getRecipe(@Param() params: RecipeId): Promise<Recipe> {
     const { id } = params;
