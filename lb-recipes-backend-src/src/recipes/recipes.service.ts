@@ -45,6 +45,11 @@ export class RecipesService {
     return allRecipes.slice(0, limit);
   }
 
+  async getAllRecipeIds(): Promise<string[]> {
+    const recipesSnapshot = await this.firebase.collection('lb-recipes').get();
+    return recipesSnapshot.docs.map((doc) => doc.id);
+  }
+
   async getTotalNbOfRecipes(): Promise<number> {
     const snapshot = await this.firebase.collection('lb-recipes').count().get();
     return snapshot.data().count;
