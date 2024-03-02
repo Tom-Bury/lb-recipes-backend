@@ -78,7 +78,7 @@ export class PreviewImageService {
     await this.firebase.uploadFile(
       previewImgBuffer,
       previewImgFileName,
-      'lb_recipes_previews_liesbury-recipes-322314',
+      'lb-recipes-previews-liesbury-recipes-gcp',
     );
 
     console.debug(
