@@ -20,7 +20,9 @@ export class RecipesService {
 
   async getAllRecipes(): Promise<Recipe[]> {
     try {
-      const recipesSnapshot = await this.firebase.collection('lb-recipes').get();
+      const recipesSnapshot = await this.firebase
+        .collection('lb-recipes')
+        .get();
       return recipesSnapshot.docs
         .sort(byUpdateTimeDescending)
         .map(
@@ -41,6 +43,11 @@ export class RecipesService {
     // TODO: create indices for preview and non-preview recipes such that we can query firestore using the limit option
     const allRecipes = await this.getAllRecipes();
     return allRecipes.slice(0, limit);
+  }
+
+  async getTotalNbOfRecipes(): Promise<number> {
+    const snapshot = await this.firebase.collection('lb-recipes').count().get();
+    return snapshot.data().count;
   }
 
   async getRecipe(recipeId: string): Promise<Recipe> {
