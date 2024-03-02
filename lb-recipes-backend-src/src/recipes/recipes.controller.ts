@@ -23,6 +23,12 @@ export class RecipesController {
 
   constructor(private readonly recipesService: RecipesService) {}
 
+  @Get('all/ids')
+  async getAllRecipeIds(): Promise<string[]> {
+    console.log(RecipesController.TAG, 'Get all recipe ids');
+    return this.recipesService.getAllRecipeIds();
+  }
+
   @Get('all/:limit?')
   async getAllRecipes(@Param('limit') limit?: string): Promise<Recipe[]> {
     let parsedLimit: number | undefined;
