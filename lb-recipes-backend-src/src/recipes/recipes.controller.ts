@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Post,
   Put,
@@ -24,12 +25,13 @@ export class RecipesController {
   constructor(private readonly recipesService: RecipesService) {}
 
   @Get('all/ids')
+  @Header('Cache-Control', 'public, max-age=300')
   async getAllRecipeIds(): Promise<string[]> {
-    console.log(RecipesController.TAG, 'Get all recipe ids');
     return this.recipesService.getAllRecipeIds();
   }
 
   @Get('all/:limit?')
+  @Header('Cache-Control', 'public, max-age=300')
   async getAllRecipes(@Param('limit') limit?: string): Promise<Recipe[]> {
     let parsedLimit: number | undefined;
 
@@ -46,6 +48,7 @@ export class RecipesController {
   }
 
   @Get('count')
+  @Header('Cache-Control', 'public, max-age=300')
   async getTotalNbOfRecipes(): Promise<number> {
     return this.recipesService.getTotalNbOfRecipes();
   }
