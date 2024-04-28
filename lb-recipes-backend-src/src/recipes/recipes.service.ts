@@ -62,7 +62,10 @@ export class RecipesService {
       .get();
 
     if (recipeSnapshot.exists) {
-      return recipeSnapshot.data() as Recipe;
+      return {
+        ...recipeSnapshot.data(),
+        id: recipeSnapshot.id,
+      } as Recipe;
     } else {
       throw new Error(`Recipe with id '${recipeId}' does not exist`);
     }
