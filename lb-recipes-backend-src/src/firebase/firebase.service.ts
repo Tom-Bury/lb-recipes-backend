@@ -57,7 +57,7 @@ export class FirebaseService {
       this.db = getFirestore('lb-recipes-database');
       this.storage = new Storage({
         projectId: this.configService.get('googleCloudProjectId'),
-        credentials: this.getCloudStorageCredentials(),
+        ...this.getCloudStorageCredentials(),
       });
       if (shouldSetFirestoreSettings) {
         this.db.settings({ ignoreUndefinedProperties: true });
@@ -66,7 +66,7 @@ export class FirebaseService {
       console.error(FirebaseService.TAG, getErrorMessage(error));
       this.storage = new Storage({
         projectId: this.configService.get('googleCloudProjectId'),
-        credentials: this.getCloudStorageCredentials(),
+        ...this.getCloudStorageCredentials(),
       });
       this.db = getFirestore('lb-recipes-database');
     }
@@ -127,12 +127,14 @@ export class FirebaseService {
   }
 
   private getCloudStorageCredentials():
-    | { client_email: string; private_key: string }
+    | { credentials: { client_email: string; private_key: string } }
     | Record<string, never> {
     return this.configService.get('usePassedServiceAccountCredentials')
       ? {
-          client_email: this.configService.get('serviceAccountEmail'),
-          private_key: this.configService.get('serviceAccountPrivateKey'),
+          credentials: {
+            client_email: this.configService.get('serviceAccountEmail'),
+            private_key: this.configService.get('serviceAccountPrivateKey'),
+          },
         }
       : {};
   }
