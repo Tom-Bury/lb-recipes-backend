@@ -18,7 +18,7 @@ resource "google_firestore_database" "lb_recipes_database" {
 }
 
 resource "google_firestore_backup_schedule" "lb_recipes_database_daily_backup" {
-  database  = google_firestore_database.lb_recipes_database.name
+  database  = google_firestore_database.lb_recipes_database.id
   retention = "604800s" // 7 days (maximum possible value for daily backups)
 
   daily_recurrence {}
