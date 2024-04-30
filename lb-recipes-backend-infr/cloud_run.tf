@@ -39,6 +39,7 @@ resource "google_cloud_run_v2_service" "lb_recipes_backend_cloud_run_service" {
           memory = "1Gi"
         }
         cpu_idle = true
+        startup_cpu_boost = true
       }
 
       env {
@@ -57,6 +58,10 @@ resource "google_cloud_run_v2_service" "lb_recipes_backend_cloud_run_service" {
       }
     }
 
+    scaling {
+      min_instance_count = 0
+      max_instance_count = 1
+    }
   }
 
   traffic {
