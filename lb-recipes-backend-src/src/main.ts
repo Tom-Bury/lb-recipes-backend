@@ -23,6 +23,7 @@ async function bootstrap() {
       'https://recepten.lies.bury.dev',
       'https://recipes.lies.bury.dev',
       /^https:\/\/.*-tom-bury\.vercel\.app\/?$/,
+      /^https:\/\/recipes-.*-tomburys-projects\.vercel\.app$/,
     ],
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     maxAge: 3600,
