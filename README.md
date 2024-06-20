@@ -1,6 +1,6 @@
 # lb-recipes-backend
 
-Repository containing the infrastructure & code for the backend used by [Liesbury's Receptenlijst](https://recepten.lies.bury.dev)
+Repository containing the infrastructure & code for the backend used by [Liesbury's Receptenlijst](https://recepten.lies.bury.dev).
 Main goal was to test out NestJS & Google Cloud Run.
 
 ## Folder structure
