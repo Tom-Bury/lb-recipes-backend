@@ -4,7 +4,12 @@ import Fuse from 'fuse.js';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { PreviewImageService } from 'src/preview-image/preview-image.service';
 import { CategoriesService } from './categories/categories.service';
-import { Recipe, RecipeData } from './interfaces/recipe-data.dto';
+import {
+  Recipe,
+  RecipeData,
+  RecipeWithoutData,
+  docToRecipeWithoutData,
+} from './interfaces/recipe-data.dto';
 import { RecipeIndexEntry } from './interfaces/recipe.interface';
 import { byUpdateTimeDescending } from 'src/firebase/firstore.utils';
 
@@ -18,20 +23,14 @@ export class RecipesService {
     private readonly categoriesService: CategoriesService,
   ) {}
 
-  async getAllRecipes(): Promise<Recipe[]> {
+  async getAllRecipes(): Promise<RecipeWithoutData[]> {
     try {
       const recipesSnapshot = await this.firebase
         .collection('lb-recipes')
         .get();
       return recipesSnapshot.docs
         .sort(byUpdateTimeDescending)
-        .map(
-          (doc) =>
-            ({
-              ...doc.data(),
-              id: doc.id,
-            } as Recipe),
-        )
+        .map(docToRecipeWithoutData)
         .filter((recipe) => !recipe?.isPreview);
     } catch (error) {
       console.error(RecipesService.TAG, 'getAllRecipes', error);
@@ -39,7 +38,7 @@ export class RecipesService {
     }
   }
 
-  async getLastNRecipes(limit: number): Promise<Recipe[]> {
+  async getLastNRecipes(limit: number): Promise<RecipeWithoutData[]> {
     // TODO: create indices for preview and non-preview recipes such that we can query firestore using the limit option
     const allRecipes = await this.getAllRecipes();
     return allRecipes.slice(0, limit);
@@ -79,7 +78,7 @@ export class RecipesService {
     return recipeSnapshot.exists;
   }
 
-  async searchRecipes(query: string): Promise<Recipe[]> {
+  async searchRecipes(query: string): Promise<RecipeWithoutData[]> {
     const recipesTitleIndex = await this.firebase
       .collection('lb-recipes-metadata')
       .doc('title-index')
@@ -109,13 +108,7 @@ export class RecipesService {
     );
 
     return results
-      .map(
-        (doc) =>
-          ({
-            ...doc.data(),
-            id: doc.id,
-          } as Recipe),
-      )
+      .map(docToRecipeWithoutData)
       .filter((recipe) => !recipe?.isPreview);
   }
 
@@ -245,15 +238,12 @@ export class RecipesService {
     );
   }
 
-  async getPreviewRecipes(): Promise<Recipe[]> {
+  async getPreviewRecipes(): Promise<RecipeWithoutData[]> {
     const previewRecipesSnapshot = await this.firebase
       .collection('lb-recipes')
       .where('isPreview', '==', true)
       .get();
 
-    return previewRecipesSnapshot.docs.map((doc) => ({
-      ...doc.data(),
-      id: doc.id,
-    })) as Recipe[];
+    return previewRecipesSnapshot.docs.map(docToRecipeWithoutData);
   }
 }

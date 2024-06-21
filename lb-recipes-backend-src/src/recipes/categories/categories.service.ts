@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { WriteBatch } from 'firebase-admin/firestore';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { nonNullable } from 'src/validation/typeValidation.utils';
-import { Recipe } from '../interfaces/recipe-data.dto';
+import { Recipe, RecipeWithoutData, docToRecipeWithoutData } from '../interfaces/recipe-data.dto';
 import { CategoryData } from './interfaces/category-count-response.dto';
 
 @Injectable()
@@ -24,7 +24,9 @@ export class CategoriesService {
     return allCategories;
   }
 
-  async getRecipesForCategories(categories: string[]): Promise<Recipe[]> {
+  async getRecipesForCategories(
+    categories: string[],
+  ): Promise<RecipeWithoutData[]> {
     const categoryRecipeIdsLists = await Promise.all(
       categories.map(
         (category) =>
@@ -54,10 +56,7 @@ export class CategoriesService {
       ),
     );
 
-    return results.map((doc) => ({
-      ...doc.data(),
-      id: doc.id,
-    })) as Recipe[];
+    return results.map(docToRecipeWithoutData);
   }
 
   async removeRecipeFromAllCategories(recipeId: string): Promise<void> {

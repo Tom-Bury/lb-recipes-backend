@@ -14,7 +14,11 @@ import {
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { getErrorMessage } from 'src/utils/error.utils';
 import { StringQuery } from 'src/validation/interfaces/query.dto';
-import { Recipe, RecipeData } from './interfaces/recipe-data.dto';
+import {
+  Recipe,
+  RecipeData,
+  RecipeWithoutData,
+} from './interfaces/recipe-data.dto';
 import { RecipeId } from './interfaces/recipe-id.dto';
 import { RecipesService } from './recipes.service';
 
@@ -32,7 +36,9 @@ export class RecipesController {
 
   @Get('all/:limit?')
   @Header('Cache-Control', 'public, max-age=300')
-  async getAllRecipes(@Param('limit') limit?: string): Promise<Recipe[]> {
+  async getAllRecipes(
+    @Param('limit') limit?: string,
+  ): Promise<RecipeWithoutData[]> {
     let parsedLimit: number | undefined;
 
     if (limit) {
@@ -109,14 +115,16 @@ export class RecipesController {
   }
 
   @Get('search')
-  async searchRecipes(@Query() { query }: StringQuery): Promise<Recipe[]> {
+  async searchRecipes(
+    @Query() { query }: StringQuery,
+  ): Promise<RecipeWithoutData[]> {
     console.info(RecipesController.TAG, `Search recipe for: ${query}`);
     return this.recipesService.searchRecipes(query);
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('preview')
-  async getPreviewRecipes(): Promise<Recipe[]> {
+  async getPreviewRecipes(): Promise<RecipeWithoutData[]> {
     console.info(RecipesController.TAG, `Get preview recipes`);
     return this.recipesService.getPreviewRecipes();
   }
