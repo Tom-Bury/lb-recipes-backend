@@ -39,6 +39,10 @@ export class RecipeData {
   previewImgFileData?: string;
 
   @IsOptional()
+  @IsDataURI()
+  blurHash?: string;
+
+  @IsOptional()
   @IsString({
     each: true,
   })
@@ -54,3 +58,35 @@ export class Recipe extends RecipeData {
   @IsString()
   id!: string;
 }
+
+export class RecipeWithoutData {
+  @IsNotEmpty()
+  @IsString()
+  id!: string;
+
+  @IsNotEmpty()
+  @IsString()
+  title!: string;
+
+  @IsOptional()
+  @IsUrl()
+  imgUrl?: string;
+
+  @IsOptional()
+  @IsDataURI()
+  blurHash?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isPreview?: boolean;
+}
+
+export const docToRecipeWithoutData = (
+  doc: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData>,
+): RecipeWithoutData => ({
+  id: doc.id,
+  title: doc.get('title'),
+  imgUrl: doc.get('imgUrl') || undefined,
+  blurHash: doc.get('blurHash') || undefined,
+  isPreview: doc.get('isPreview') || undefined,
+});
