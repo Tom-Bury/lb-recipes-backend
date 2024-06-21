@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { WriteBatch } from 'firebase-admin/firestore';
 import { FirebaseService } from 'src/firebase/firebase.service';
 import { nonNullable } from 'src/validation/typeValidation.utils';
-import { Recipe, RecipeWithoutData, docToRecipeWithoutData } from '../interfaces/recipe-data.dto';
+import {
+  RecipeWithoutData,
+  docToRecipeWithoutData,
+} from '../interfaces/recipe-data.dto';
 import { CategoryData } from './interfaces/category-count-response.dto';
 
 @Injectable()
