@@ -1,6 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import compression from 'compression';
 
 declare const module: any;
 
@@ -8,6 +9,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     bodyParser: false,
   });
+
+  app.use(compression());
 
   // Remove any properties from request bodies etc that are not defined in the set types
   app.useGlobalPipes(
